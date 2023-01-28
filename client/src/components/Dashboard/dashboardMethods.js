@@ -64,6 +64,9 @@ export const handleNavigationClick = (destination, navigate) => {
     else if (destination === "usermanagement") {
         return navigate('/dashboard/users');
     }
+    else if (destination === "tracking") {
+        return navigate('/dashboard/tracking');
+    }
 }
 
 export const handleLogout = (navigate) => {
