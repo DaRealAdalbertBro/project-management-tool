@@ -7,7 +7,6 @@ import LoginPage from './components/Auth/LoginPage';
 import RegisterPage from './components/Auth/RegisterPage';
 import NotFound from './components/InvalidPage/NotFound';
 import UserManagement from './components/UserManagement/UserManagement';
-import Tracking from './components/Tracking/Tracking';
 
 // set Axios defaults
 import Axios from 'axios';
@@ -20,6 +19,7 @@ function App() {
   useEffect(() => {
     // Immediately invoked function to set the theme on initial load
     setTheme();
+
   }, []);
 
   return (
@@ -27,14 +27,11 @@ function App() {
       <div className='App'>
 
         <Routes>
+          <Route exact path='/' element={<LoginPage />} />
           <Route exact path='/login' element={<LoginPage />} />
 
           <Route path='/dashboard' element={
             <Dashboard componentToShow={<Home />} />
-          } />
-
-          <Route path='/dashboard/tracking' element={
-            <Dashboard componentToShow={<Tracking />} />
           } />
 
           <Route path="/dashboard/users/register" element={<RegisterPage />} />
