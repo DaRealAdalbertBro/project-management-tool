@@ -10,13 +10,16 @@
     "buffer": "^6.0.3",
     "fs": "^0.0.1-security",
     "install": "^0.13.0",
+    "moment": "^2.29.4",
     "npm": "^9.2.0",
     "pagination-object": "^1.2.2",
     "react": "^18.2.0",
+    "react-admin": "^4.7.1",
     "react-dom": "^18.2.0",
     "react-icons": "^4.7.1",
     "react-router-dom": "^6.5.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "react-select": "^5.7.0"
   },
   "scripts": {
     "start": "react-scripts start",

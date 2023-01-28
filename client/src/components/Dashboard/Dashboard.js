@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { BiCog, BiGroup } from "react-icons/bi";
 import { FaBars, FaHome } from "react-icons/fa";
 import { BsBoxArrowLeft } from "react-icons/bs";
-import { HiOutlineDocumentText } from "react-icons/hi";
+import { HiOutlineDocumentText, HiOutlineLightBulb, HiOutlineMoon } from "react-icons/hi";
 import { MdArrowDropDown, MdOutlineBugReport } from "react-icons/md";
 
 // import dashboard methods
@@ -14,11 +14,10 @@ import { defaultProfilePicture, maxPermissionLevel } from '../globalVariables';
 import { handleNavigationClick, handleProfileDropdown, handleProfileDropdownItemClick, handleClickOutsideProfileDropdown, handleLogout, handleLeftSidebarToggle } from './dashboardMethods';
 import { getTheme, getUserData, toggleTheme } from '../../utils/utils';
 
-import { HiOutlineLightBulb, HiOutlineMoon } from 'react-icons/hi';
-
 // import dashboard css
 import './Dashboard.css';
 import { AiFillGithub } from 'react-icons/ai';
+import { FiClock } from 'react-icons/fi';
 
 const Dashboard = ({ componentToShow }) => {
     const navigate = useNavigate();
@@ -228,6 +227,11 @@ const LeftSideBar = ({ permissionLevel }) => {
             <button className='dashboard-left-bar-item' id="Home" onClick={() => handleNavigationClick("Home", navigate)}>
                 <FaHome />
                 <p>Home</p>
+            </button>
+
+            <button className='dashboard-left-bar-item' id="Tracking" onClick={() => handleNavigationClick("Tracking", navigate)}>
+                <FiClock />
+                <p>Tracking</p>
             </button>
 
             {
