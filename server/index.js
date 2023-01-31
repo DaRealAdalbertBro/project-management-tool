@@ -96,7 +96,6 @@ db_connection.connect((error) => {
 });
 
 // set up multer
-const uuid = require('uuid').v4;
 const multer = require('multer');
 
 // set up storage
@@ -140,8 +139,13 @@ require("./api/post/fetchUserList")(app, db_connection);
 require("./api/post/deleteUser")(app, db_connection);
 require("./api/post/transferOwnership")(app, db_connection);
 
+require("./api/post/tracking/create")(app, db_connection);
+require("./api/post/tracking/delete")(app, db_connection);
+require("./api/post/tracking/update")(app, db_connection);
+
 // GET
 require("./api/get/userinfo")(app);
+require("./api/get/tracking/fetch")(app, db_connection);
 
 
 // create server on port 3001 or port specified in .env file

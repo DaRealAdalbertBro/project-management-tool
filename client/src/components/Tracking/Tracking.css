@@ -12,13 +12,19 @@
     width: 100%;
 }
 
-.tracking .header h2 {
+.tracking h2 {
     font-size: 1.7rem;
     width: 100%;
     padding-bottom: 4px;
     color: var(--default-text);
     border-bottom: 1px solid var(--divider-gray);
     font-weight: 300;
+}
+
+.tracking .data-list h2 {
+    font-size: 1.3rem;
+    opacity: 0.8;
+    border-bottom: 1px var(--divider-gray) dotted;
 }
 
 .tracking .box {
@@ -69,7 +75,7 @@
 }
 
 .react-select__control {
-    background-color: var(--gray) !important;
+    background-color: transparent !important;
     border: none !important;
     width: auto;
     min-width: 192px;
@@ -77,7 +83,7 @@
 }
 
 .react-select__menu {
-    background-color: var(--gray) !important;
+    background-color: transparent !important;
     color: var(--default-text) !important;
 }
 
@@ -126,3 +132,53 @@
     cursor: pointer;
 }
 
+.tracking .data-list {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.tracking .box.history {
+    margin-top: 8px;
+}
+
+.tracking .box.history .description input::placeholder {
+    opacity: 0;
+}
+
+.tracking .data-list .box {
+    opacity: 0.7;
+    background-color: var(--gray);
+    transition: opacity 0.2s ease-in-out;
+}
+
+.tracking .data-list .box:hover {
+    opacity: 1;
+}
+
+.tracking .data-list .box .duration input[type="text"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 86px;
+}
+
+.tracking .data-list .deleteButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    background-color: transparent;
+    color: var(--red);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.tracking .data-list .deleteButton:hover {
+    color: var(--red-hover);
+}
