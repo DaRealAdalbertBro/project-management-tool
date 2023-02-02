@@ -45,8 +45,8 @@ module.exports = function (app, db_connection) {
             if (error || (result && result.affectedRows === 0)) {
                 return response.send({ status: 0, message: CONFIG.messages.TRACKING_FAILED });
             }
-
-            return response.send({ status: 1, message: CONFIG.messages.TRACKING_CREATED });
+            console.log(result.insertId)
+            return response.send({ status: 1, message: CONFIG.messages.TRACKING_CREATED, tracking_id: result.insertId });
         });
 
     });

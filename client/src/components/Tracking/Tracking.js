@@ -7,10 +7,9 @@ import Axios from 'axios';
 
 import { apiServerIp } from '../globalVariables';
 
-import { AiFillPlayCircle, AiFillTags, AiFillPauseCircle, AiOutlineDelete } from 'react-icons/ai';
+import { AiFillPlayCircle, AiFillTags, AiFillPauseCircle, AiOutlineDelete, AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
 import './Tracking.css'
-
 
 const animatedComponents = makeAnimated();
 
@@ -61,9 +60,7 @@ const Tracking = () => {
             <div className="header">
                 <h2>Quick Access</h2>
 
-                {trackingHistory.length === 0 && <Record type="quick" />}
-
-                {trackingHistory.map((record) => {
+                {trackingHistory.filter((record) => record.status === 1).length > 0 ? trackingHistory.filter((record) => record.status === 1).map((record) => {
                     if (quickIndex === 1) {
                         return null;
                     }
@@ -86,7 +83,9 @@ const Tracking = () => {
                             />
                         );
                     }
-                })
+                }) : (
+                    <Record type="quick" />
+                )
                 }
             </div>
 
@@ -105,9 +104,9 @@ const Tracking = () => {
                                     t_description={record.description}
                                     t_tags={record.tags}
                                     t_start_date={moment(record.start_date).format('YYYY-MM-DDTHH:mm')}
-                                    t_end_date={moment(record.end_date).format('YYYY-MM-DDTHH:mm')}
                                     t_time_difference={formattedDifference}
                                     t_record={record}
+                                    t_score={record.score || 0}
                                 />
                             )
                         }
@@ -118,10 +117,12 @@ const Tracking = () => {
     )
 }
 
-const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_difference, t_status, t_record }) => {
+const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, t_status, t_record, t_score }) => {
     const navigate = useNavigate();
     const [tagOptions, setTagOptions] = useState([]);
     const [isTracking, setIsTracking] = useState(t_status);
+    const [tracking_id, setTracking_id] = useState(t_record ? t_record.id : null);
+    const [currentScore, setCurrentScore] = useState(t_score);
 
     const createRecord = (description, startDate, tags) => {
         const controller = new AbortController();
@@ -134,7 +135,9 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
             tags: tags
         }, { signal: controller.signal })
             .then(response => {
-                console.log(response.data)
+                if (response.data.status === 1) {
+                    setTracking_id(response.data.tracking_id);
+                }
             })
             .catch(error => {
                 if (error.name === 'AbortError') {
@@ -148,30 +151,38 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
         return () => controller.abort();
     }
 
-    const updateRecord = (description, startDate, endDate, tags, status) => {
+    const updateRecord = (data, reload = false) => {
         const controller = new AbortController();
+        const id = t_record ? t_record.id : tracking_id;
 
-        // Axios.post(apiServerIp + '/api/post/tracking/update', {
-        //     user_id: 'self',
-        //     description: description,
-        //     start_date: startDate,
-        //     end_date: endDate,
-        //     status: status,
-        //     tags: tags
-        // }, { signal: controller.signal })
-        //     .then(response => {
-        //         if (response.data.status === 1) {
-        //             window.location.reload();
-        //         }
-        //     })
-        //     .catch(error => {
-        //         if (error.name === 'AbortError') {
-        //             console.log('Aborted');
-        //         }
-        //         else {
-        //             console.log(error);
-        //         }
-        //     });
+        // , description, startDate, endDate, tags, status, 
+        if (!id || !data) return;
+
+        const { description, start_date, end_date, tags, status, user_id, score } = data;
+
+        Axios.post(apiServerIp + '/api/post/tracking/update', {
+            user_id: user_id || 'self',
+            tracking_id: id,
+            description: description,
+            start_date: start_date,
+            end_date: end_date,
+            tags: JSON.stringify(tags),
+            status: status,
+            score: score,
+        }, { signal: controller.signal })
+            .then(response => {
+                if (response.data.status === 1 && reload) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                if (error.name === 'AbortError') {
+                    console.log('Aborted');
+                }
+                else {
+                    console.log(error);
+                }
+            });
 
         return () => controller.abort();
     }
@@ -199,40 +210,74 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
         return () => controller.abort();
     }
 
-    const getQuickAccessTags = () => {
+    const getTags = (target) => {
         let tags = [];
 
-        document.querySelectorAll('.quick .react-select__multi-value__label').forEach((tag) => {
-            tags.push(tag.innerText);
+        if (target === null || target === undefined) {
+            target = document.querySelectorAll('.quick .react-select__multi-value__label');
+
+            if (target == null) return;
+        }
+
+        if (typeof target.forEach !== 'function') {
+            tags.push(target.textContent);
+            return tags;
+        }
+
+        target.forEach((tag) => {
+            tags.push(tag.textContent);
         });
 
         return tags;
     }
 
-    const handleTimeChange = (time, label) => {
-        if (time === null || time === undefined) {
-            time = t_start_date || moment().format('YYYY-MM-DDTHH:mm');
+    const handleStarClick = (event) => {
+        const scoreInput = event.target.closest('.score').querySelector('input[type="number"]');
+
+        if (scoreInput === undefined || scoreInput === null) return;
+
+        let value = scoreInput.value;
+        if (value === undefined || value === null) return;
+
+        if (value === '0') {
+            scoreInput.value = 5;
+        } else {
+            scoreInput.value = 0;
+        }
+
+        setCurrentScore(scoreInput.value);
+        updateRecord({
+            score: parseInt(scoreInput.value)
+        });
+    }
+
+    const handleTimeChange = (time, label, action = "none") => {
+        if ((time === null || time === undefined) || (time && (time.value === undefined || time.value == null))) {
+            const startDateInput = document.querySelector('.quick input[type="datetime-local"]').value;
+            time = { value: moment(startDateInput || t_start_date).format('YYYY-MM-DDTHH:mm') || moment().format('YYYY-MM-DDTHH:mm') };
         }
         if (label === null || label === undefined) {
             label = document.querySelector('.quick label.time');
         }
 
-        // add seconds to the t_start_date
-        let startTime = moment((time.value || time) + ":" + label.dataset.startedAtSeconds).toDate();
+        let startTime = moment(time.value + ":" + (label.dataset.startedAtSeconds !== undefined ? (label.dataset.startedAtSeconds) : moment().format("ss"))).toDate();
         const currentTime = moment().toDate();
         let diff = currentTime - startTime;
 
         if (diff < 0) {
-            startTime.setDate(startTime.getDate() - 1);
+            startTime.setDate(moment().date());
             diff = currentTime - startTime;
+
+            document.querySelector('.quick input[type="datetime-local"]').value = moment(t_start_date).format('YYYY-MM-DDTHH:mm');
 
             if (diff < 0) {
                 time.value = moment().format('YYYY-MM-DDTHH:mm');
                 label.innerText = "00:00:00";
                 return;
             }
-            else time.value = moment(startTime).format('YYYY-MM-DDTHH:mm');
+            else time = moment(startTime).format('YYYY-MM-DDTHH:mm');
         }
+
 
         const hours = Math.floor(diff / 1000 / 60 / 60);
         const minutes = Math.floor(diff / 1000 / 60) - (hours * 60);
@@ -240,6 +285,13 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
 
         const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         label.innerText = formattedTime;
+
+        if (action === "update" && !(type === 'quick' && !isTracking)) {
+            updateRecord({
+                start_date: startTime,
+                end_date: document.querySelector('.quick input[type="datetime-local"]').value + ":" + moment().format('ss'),
+            });
+        }
     }
 
     useEffect(() => {
@@ -257,8 +309,9 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
                 createRecord(
                     document.querySelector('.quick input.descriptionInput').value,
                     document.querySelector('.quick input.startDate').value + ":" + label.dataset.startedAtSeconds,
-                    getQuickAccessTags()
+                    getTags()
                 );
+                t_status = 1;
             }
         }
         else {
@@ -293,7 +346,17 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
     return (
         <div className={"box " + type}>
             <div className="description">
-                <input className="descriptionInput" type="text" placeholder="Enter description" maxLength={255} defaultValue={t_description || ""} />
+                <input className="descriptionInput" type="text" placeholder="Enter description" maxLength={255} onBlur={(event) => {
+                    if (type === 'quick' && !isTracking) return;
+
+                    const boxBase = event.target.closest(".box");
+
+                    if (boxBase.querySelector('input.descriptionInput').value === t_description) return;
+
+                    updateRecord({
+                        description: boxBase.querySelector('input.descriptionInput').value
+                    });
+                }} defaultValue={t_description || ""} />
             </div>
 
             <div style={{
@@ -313,6 +376,18 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
                         className="react-select-container"
                         classNamePrefix="react-select"
                         placeholder=""
+                        onBlur={(e) => {
+                            if (type === "quick" && !isTracking) return;
+
+                            const boxBase = e.target.closest('.box');
+                            const tags = getTags(boxBase.querySelectorAll('.tags .react-select__multi-value__label'));
+
+                            if (JSON.stringify(tags) === t_tags) return;
+
+                            updateRecord({
+                                tags: tags,
+                            });
+                        }}
                         defaultValue={(t_tags && JSON.parse(t_tags).map((tag) => {
                             return { value: tag, label: tag };
                         })) || []}
@@ -366,18 +441,53 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
 
                 </div>
 
+                {type && !type.includes("quick") && (
+                    <div className="score">
+                        <input type="number" min="0" max="5" maxLength={1} defaultValue={t_score} onChange={(e) => {
+                            if (e.target.value < 0 || e.target.value > 5) {
+                                e.target.value = currentScore;
+                                return;
+                            }
+                        }} onBlur={(event) => {
+                            const value = event.target.value;
+
+                            if (value === currentScore) return;
+
+                            setCurrentScore(value);
+                            updateRecord({
+                                score: value
+                            });
+                        }} />
+                        <div className="star-icon" onClick={(event) => handleStarClick(event)}>
+                            {currentScore.toString() === '0' ? <AiOutlineStar /> : <AiFillStar />}
+                        </div>
+                    </div>
+                )}
+
                 <div className="duration">
                     {type && type.includes("quick") &&
                         < input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
-                            handleTimeChange(event.target, event.target.parentElement.querySelector('label'));
+                            handleTimeChange(event.target, event.target.parentElement.querySelector('label'), "update");
                         }} />
                     }
                     {type && !type.includes("quick") ?
                         <input className="time" type="text" placeholder="00:00:00" defaultValue={t_time_difference} onBlur={(event) => {
-                            const regex = /^(0\d|1\d|2[0-3]):[0-5]\d:[0-5]\d$/;
+                            // Check if the input is valid (HH:mm:ss) but hours can be up to 999
+                            const regex = /^([0-9]{1,3}):([0-5][0-9]):([0-5][0-9])$/;
                             if (!regex.test(event.target.value)) {
                                 event.target.value = t_time_difference;
+                                return;
                             }
+
+                            const endDate = moment(t_start_date + ":" + moment(t_record.start_date).format("ss")).add(event.target.value, 'seconds').format("YYYY-MM-DD HH:mm:ss");
+                            console.log(endDate)
+
+                            if (endDate === moment(t_record.end_date).format("YYYY-MM-DD HH:mm:ss")) return;
+
+                            updateRecord({
+                                end_date: endDate,
+                            });
+
                         }} />
                         :
                         <label className="time">{t_time_difference || "00:00:00"}</label>
@@ -398,14 +508,16 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
                     <button className="startButton" onClick={(event) => {
                         event.preventDefault();
 
+                        const boxBase = document.querySelector('.quick');
+
                         if (isTracking) {
-                            updateRecord(
-                                document.querySelector('.quick input.descriptionInput').value,
-                                document.querySelector('.quick input.startDate').value + ":" + document.querySelector('.quick label.time').dataset.startedAtSeconds,
-                                moment().format('YYYY-MM-DDTHH:mm:ss'),
-                                document.querySelector('.quick #tags-dropdown').value,
-                                0
-                            );
+                            updateRecord({
+                                description: boxBase.querySelector('input.descriptionInput').value,
+                                start_date: boxBase.querySelector('input.startDate').value + ":" + boxBase.querySelector('.quick label.time').dataset.startedAtSeconds,
+                                end_date: moment().format('YYYY-MM-DDTHH:mm:ss'),
+                                tags: getTags(boxBase.querySelectorAll('.tags .react-select__multi-value__label')),
+                                status: 0
+                            }, true);
                         }
 
                         setIsTracking(!isTracking);
@@ -414,7 +526,7 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_
                         {isTracking ? <AiFillPauseCircle /> : <AiFillPlayCircle />}
                     </button>}
             </div>
-        </div>
+        </div >
     )
 };
 
