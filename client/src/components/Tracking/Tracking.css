@@ -182,3 +182,46 @@
 .tracking .data-list .deleteButton:hover {
     color: var(--red-hover);
 }
+
+.tracking .box .score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--default-text);
+    cursor: pointer;
+}
+
+.tracking .box .score input {
+    width: 24px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: var(--default-text);
+}
+
+/* Chrome, Safari, Edge, Opera */
+.tracking .box .score input::-webkit-outer-spin-button,
+.tracking .box .score input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.tracking .box .score input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.tracking .box .score .star-icon {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tracking .box .score .star-icon svg {
+    color: yellow;
+    font-size: 1.3rem;
+}
