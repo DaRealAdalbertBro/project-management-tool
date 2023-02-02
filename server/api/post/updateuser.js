@@ -184,7 +184,20 @@ module.exports = function (app, db_connection, upload) {
         // update user data
         const update = await utils.updateUser(user_id.value, updateObject).catch((error) => {
             console.log(error);
-        });;
+        });
+
+        // if there's an avatar url
+        if(user_avatar_url.status
+            && user_avatar_url.value === CONFIG.defaults.DEFAULT_CLIENT_AVATAR_URL
+            && user_avatar_url.value !== result[0][CONFIG.database.users_table_columns.user_avatar_url]){
+                const domainUrl = request.protocol + '://' + request.get('host');
+                console.log(domainUrl)
+            fs.unlink(path.join(__dirname, '..', '..', result[0][CONFIG.database.users_table_columns.user_avatar_url].replace(domainUrl,"")), (err) => {
+                if(err && err.code !== 'ENOENT'){
+                    console.log(err)
+                }
+            })
+        }
 
         // return success message if user data was updated
         if (update && update.affectedRows > 0) {
@@ -212,17 +225,7 @@ module.exports = function (app, db_connection, upload) {
             return response.send({ status: 1, message: CONFIG.messages.USER_UPDATED, user: userObject });
         }
 
-        // if there's an avatar url
-        if(user_avatar_url.status
-            && user_avatar_url.value === CONFIG.defaults.DEFAULT_CLIENT_AVATAR_URL
-            && user_avatar_url.value !== result[0][CONFIG.database.users_table_columns.user_avatar_url]){
-                const domainUrl = request.protocol + '://' + request.get('host') + ":" + process.env.SERVER_PORT;
-            fs.unlink(path.join(__dirname, '..', '..', result[0][CONFIG.database.users_table_columns.user_avatar_url].replace(domainUrl,"")), (err) => {
-                if(err && err.code !== 'ENOENT'){
-                    console.log(err)
-                }
-            })
-        }
+        
 
     });
 }

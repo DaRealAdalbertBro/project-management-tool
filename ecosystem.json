@@ -1,0 +1,10 @@
+{
+    "apps": [{
+        "name": "client",
+        "script": "./client/server.js"
+    },
+    {
+        "name": "server",
+        "script": "./server/index.js"
+    }]
+}

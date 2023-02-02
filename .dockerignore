@@ -1,0 +1,8 @@
+node_modules/
+database_structure.md
+.gitignore
+README.md
+server/env.template
+server/cdn/uploads/*
+server/node_modules/
+client/node_modules/

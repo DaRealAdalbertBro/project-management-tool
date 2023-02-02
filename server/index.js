@@ -55,7 +55,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 // set up static files
-app.use('/cdn', express.static(path.join('cdn')));
+app.use('/cdn', express.static(path.join(__dirname,'cdn')));
 
 console.log("Setting up session...");
 
