@@ -18,14 +18,19 @@ module.exports = function (app, db_connection) {
             return response.send({ status: 0, message: CONFIG.messages.USER_NOT_FOUND });
         }
 
-        const tracking_id = validator.escape(request.body.tracking_id.toString());
+        let tracking_id = validator.escape(request.body.tracking_id.toString());
 
         if (!tracking_id) {
+            return response.send({ status: 0, message: CONFIG.messages.USER_NOT_FOUND });
+        }
+
+        try {
+            tracking_id = parseInt(tracking_id);
+        } catch (error) {
             return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
         }
 
         db_connection.query('DELETE FROM tracking WHERE id = ? AND user_id = ?', [tracking_id, user_id.value], function (error, result) {
-            console.log(error, result)
             if (error || (result && result.affectedRows === 0)) {
                 return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
             }

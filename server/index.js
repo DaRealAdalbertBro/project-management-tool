@@ -146,6 +146,8 @@ require("./api/post/tracking/update")(app, db_connection);
 // GET
 require("./api/get/userinfo")(app);
 require("./api/get/tracking/fetch")(app, db_connection);
+require("./api/get/tracking/fetchByFilter")(app, db_connection);
+require("./api/get/fetchUsers")(app, db_connection);
 
 
 // create server on port 3001 or port specified in .env file

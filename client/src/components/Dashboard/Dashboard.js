@@ -17,7 +17,7 @@ import { getTheme, getUserData, toggleTheme } from '../../utils/utils';
 // import dashboard css
 import './Dashboard.css';
 import { AiFillGithub } from 'react-icons/ai';
-import { FiClock } from 'react-icons/fi';
+import { FiClock, FiFile, FiList } from 'react-icons/fi';
 
 const Dashboard = ({ componentToShow }) => {
     const navigate = useNavigate();
@@ -232,6 +232,11 @@ const LeftSideBar = ({ permissionLevel }) => {
             <button className='dashboard-left-bar-item' id="Tracking" onClick={() => handleNavigationClick("Tracking", navigate)}>
                 <FiClock />
                 <p>Tracking</p>
+            </button>
+
+            <button className='dashboard-left-bar-item' id="Records" onClick={() => handleNavigationClick("Records", navigate)}>
+                <FiFile />
+                <p>Records</p>
             </button>
 
             {

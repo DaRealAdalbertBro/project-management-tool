@@ -29,7 +29,22 @@ module.exports = function (app, db_connection) {
                 return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
             }
 
-            return response.send({ status: 1, message: CONFIG.messages.TRACKING_FETCHED, data: result });
+            // get user id username and tag
+            db_connection.query("SELECT user_name, user_tag, user_avatar_url FROM users WHERE user_id = ?", [user_id.value], (error, result2) => {
+                if (error || (result2 && result2.affectedRows === 0)) {
+                    return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
+                }
+
+                result.forEach((record) => {
+                    record.author = {
+                        user_name: result2[0].user_name,
+                        user_tag: result2[0].user_tag,
+                        user_avatar_url: result2[0].user_avatar_url
+                    }
+                });
+
+                return response.send({ status: 1, message: CONFIG.messages.TRACKING_FETCHED, data: result });
+            });
         });
     });
 }

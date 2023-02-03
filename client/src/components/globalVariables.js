@@ -34,3 +34,12 @@ export const NotFoundGif = [
 ]
 
 export const apiServerIp = "http://localhost:9001";
+
+export const globalTags = [
+    { value: 'C#', label: 'C#' },
+    { value: 'Java', label: 'Java' },
+    { value: 'JavaScript', label: 'JavaScript' },
+    { value: 'C++', label: 'C++' },
+    { value: 'Python', label: 'Python' },
+    { value: 'Rust', label: 'Rust' },
+];
