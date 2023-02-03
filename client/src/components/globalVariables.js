@@ -33,4 +33,4 @@ export const NotFoundGif = [
     }
 ]
 
-export const apiServerIp = "http://localhost:9001";
+export const apiServerIp = "http://host.docker.internal:9001";

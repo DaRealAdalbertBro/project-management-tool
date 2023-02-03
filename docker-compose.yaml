@@ -1,0 +1,23 @@
+services:
+  app:
+    image: tdp
+    env_file:
+    - ./server/.env
+    ports:
+    - "9000:9000"
+    - "9001:9001"
+    depends_on:
+    - db
+  db:
+    image: mysql
+    env_file:
+    - ./.env
+    ports:
+    - "3306:3306"
+    volumes:
+    - mysqldata:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+volumes:
+  mysqldata:
+    external: true
