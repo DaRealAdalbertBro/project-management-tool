@@ -5,11 +5,11 @@ import makeAnimated from 'react-select/animated';
 import moment from 'moment';
 import Axios from 'axios';
 
-import { apiServerIp, globalTags } from '../globalVariables';
+import { apiServerIp, defaultProfilePicture, globalTags } from '../globalVariables';
 import { createRecord, updateRecord, deleteRecord, handleStarClick } from "./trackingMethods";
 
 import { AiFillPlayCircle, AiFillTags, AiFillPauseCircle, AiOutlineDelete, AiFillStar, AiOutlineStar } from 'react-icons/ai';
-
+import { LoadingCircle } from "../LoadingCircle";
 import './Tracking.css'
 import { CustomPopup } from "../CustomPopup";
 
@@ -89,6 +89,11 @@ const Tracking = () => {
                         const seconds = difference.seconds();
 
                         let formattedDifference = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                        if (formattedDifference.includes('NaN')) {
+                            formattedDifference = undefined;
+                        }
+
                         quickIndex++;
 
                         return (
@@ -106,7 +111,7 @@ const Tracking = () => {
                         );
                     }
                 }) : (
-                    <Record type="quick" />
+                    <Record type="quick" popupContext={popupContext} />
                 )
                 }
             </div>
@@ -121,6 +126,10 @@ const Tracking = () => {
                             const minutes = difference.minutes();
                             const seconds = difference.seconds();
                             let formattedDifference = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                            if (formattedDifference.includes('NaN')) {
+                                formattedDifference = undefined;
+                            }
 
                             return (
                                 <Record
@@ -144,13 +153,14 @@ const Tracking = () => {
 }
 
 export const SelectStyles = {
-    control: base => ({
+    control: (base, state) => ({
         ...base,
         border: 0,
         // This line disable the blue border
         boxShadow: 'none',
         display: 'flex',
         justifyContent: 'right',
+        opacity: state.isDisabled ? 0.5 : 1,
     }),
     option: (provided) => ({
         ...provided,
@@ -188,10 +198,10 @@ export const SelectStyles = {
     indicatorSeparator: base => ({
         ...base,
         display: 'none',
-    }),
+    })
 };
 
-export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_difference, t_status, t_record, t_score, popupContext, t_show_date = false }) => {
+export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_difference, t_status, t_record, t_score, popupContext, authorOptions, t_show_date = false }) => {
     const navigate = useNavigate();
     const [tagOptions, setTagOptions] = useState(globalTags);
     const [isTracking, setIsTracking] = useState(t_status);
@@ -259,7 +269,6 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                     selectedTags.map(tag => tag.value),
                     setTracking_id, popupContext
                 );
-                t_status = 1;
             }
         }
         else {
@@ -274,7 +283,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
 
         return () => clearInterval(interval);
 
-    }, [type, isTracking, t_status, t_record]);
+    }, [type, isTracking, t_status]);
 
     useEffect(() => {
         if (type !== 'quick') return;
@@ -284,11 +293,42 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
     return (
         <div className={"box " + type}>
 
-            {t_record && t_record.author && type !== "quick" && type.includes("record") && (
+            {t_record && t_record.author && type !== "quick" && type.includes("record") && authorOptions && (
                 <div className="author">
-                    <img src={t_record.author.user_avatar_url} alt="avatar" />
-                    <span>{t_record.author.user_name}</span>
+                    <img src={t_record.author.user_avatar_url} onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = defaultProfilePicture;
+                    }} alt="avatar" />
+                    
+                    <div className="author-select">
+                        <Select
+                            id="author-filter"
+                            closeMenuOnSelect={false}
+                            components={{ animatedComponents: makeAnimated() }}
+                            options={
+                                authorOptions.map((author) => {
+                                    const name = author.user_name + "#" + author.user_tag;
+
+                                    return { value: author.user_id, label: name }
+                                })
+                            }
+                            defaultValue={{value: t_record.author.user_id, label: t_record.author.user_name + "#" + t_record.author.user_tag}}
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                            placeholder="Author Filter"
+                            maxMenuHeight={400}
+                            styles={SelectStyles}
+                            onChange={(selected) => {
+                                if (selected.value === t_record.author.user_id) return;
+
+                                updateRecord({
+                                    new_user_id: selected.value,
+                                }, t_record, tracking_id, popupContext, true);
+                            }}
+                        />
+                    </div>
                 </div>
+
             )}
 
             <div className="description">
@@ -322,6 +362,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                         className="react-select-container"
                         classNamePrefix="react-select"
                         placeholder=""
+                        maxMenuHeight={400}
                         onBlur={(e) => {
                             if (type === "quick" && !isTracking) return;
 
@@ -388,7 +429,6 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                             }
 
                             const endDate = moment(t_start_date + ":" + moment(t_record.start_date).format("ss")).add(event.target.value, 'seconds').format("YYYY-MM-DD HH:mm:ss");
-                            // console.log(endDate)
 
                             if (endDate === moment(t_end_date).format("YYYY-MM-DD HH:mm:ss")) return;
 
@@ -398,7 +438,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
 
                         }} />
                         : !t_show_date &&
-                        <label className="time">{t_time_difference || "00:00:00"}</label>
+                        <label className="time">{t_time_difference || isTracking ? <LoadingCircle /> : "00:00:00"}</label>
                     }
 
                     {type && !type.includes("quick") && t_show_date && (

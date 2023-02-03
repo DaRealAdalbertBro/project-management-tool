@@ -1,9 +1,9 @@
-@import url("https://cdn.syncfusion.com/ej2/material.css");
-
+@import "./rsuit-custom.css";
 .tracking {
     width: 100%;
     height: 100%;
     display: flex;
+    
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
@@ -243,9 +243,8 @@
     justify-content: center;
     background-color: transparent;
     color: var(--default-text);
-    pointer-events: none;
-    opacity: 0.7;
     margin-right: 56px;
+    z-index: 999;
 }
 
 .tracking .box .author img {

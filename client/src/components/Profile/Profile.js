@@ -443,7 +443,7 @@ const AvatarSettings = ({ data, popupContext, canSaveAvatar, setCanSaveAvatar, a
 
                         </div>
 
-                        <div className="avatar-preview">popupContext
+                        <div className="avatar-preview">
                             <div className="avatar-preview-image">
                                 <img src={(avatarFile && URL.createObjectURL(avatarFile)) || data.user.user_avatar_url || defaultProfilePicture} onError={e => { e.currentTarget.src = defaultProfilePicture; e.currentTarget.onerror = null }} crossOrigin="Anonymous" draggable="false" alt="" />
                             </div>

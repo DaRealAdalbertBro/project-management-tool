@@ -7,7 +7,7 @@ module.exports = function (app, db_connection) {
         }
 
         // fetch user names and tags from database that have any records in tracking
-        const query = `SELECT user_id, user_name, user_tag FROM users WHERE user_id IN (SELECT user_id FROM tracking)`;
+        const query = `SELECT user_id, user_name, user_tag FROM users`;
 
         db_connection.query(query, (error, result) => {
             if (error) {
