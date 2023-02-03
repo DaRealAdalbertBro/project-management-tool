@@ -118,12 +118,19 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: CONFIG.defaults.DEFAULT_MAX_FILE_SIZE[1] },
     fileFilter: (req, file, cb) => {
+        // do nothing if there is no file or file is default
+        if (!file || req.body.old_user_avatar_url.split("/").pop() == "default.png") {
+            cb(null, false);
+            return cb(new Error('No file or default file!'));
+        }
+
         if (file.mimetype.includes('image') || file.mimetype.includes('gif')) {
-            fs.unlink(path.join(__dirname, "/cdn/uploads/", req.session.user.user_avatar_url.split("/").pop()), (err) => {
-                if(err && !err.code == "ENOENT"){
+            fs.unlink(path.join(__dirname, "/cdn/uploads/", req.body.old_user_avatar_url.split("/").pop()), (err) => {
+                if (err && !err.code == "ENOENT") {
                     cb(null, false)
                     return cb(err)
                 }
+                console.log("Old file deleted")
             })
             cb(null, true);
         } else {

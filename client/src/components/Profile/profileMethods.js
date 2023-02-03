@@ -166,6 +166,7 @@ export const isAvatarUpdateValid = (data, image) => {
 
         // append user id to form data
         formData.append("user_id", data.user_id);
+        formData.append("old_user_avatar_url", data.user_avatar_url);
 
         // check if image is valid
         if (!isFileValid(image).status) {
