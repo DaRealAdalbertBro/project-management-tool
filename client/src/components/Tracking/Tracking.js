@@ -5,7 +5,8 @@ import makeAnimated from 'react-select/animated';
 import moment from 'moment';
 import Axios from 'axios';
 
-import { apiServerIp } from '../globalVariables';
+import { apiServerIp, globalTags } from '../globalVariables';
+import { createRecord, updateRecord, deleteRecord, getTags, handleStarClick } from "./trackingMethods";
 
 import { AiFillPlayCircle, AiFillTags, AiFillPauseCircle, AiOutlineDelete, AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
@@ -43,7 +44,7 @@ const Tracking = () => {
                 }
             })
             .catch(error => {
-                if (error.name === 'AbortError') {
+                if (error.name === 'CanceledError') {
                     console.log('Aborted');
                 }
                 else {
@@ -117,145 +118,67 @@ const Tracking = () => {
     )
 }
 
-const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, t_status, t_record, t_score }) => {
+export const SelectStyles = {
+    control: base => ({
+        ...base,
+        border: 0,
+        // This line disable the blue border
+        boxShadow: 'none',
+        display: 'flex',
+        justifyContent: 'right',
+    }),
+    option: (provided) => ({
+        ...provided,
+        backgroundColor: 'var(--divider-gray)',
+        ':hover': {
+            backgroundColor: 'var(--blue)',
+            cursor: 'pointer',
+        },
+    }),
+    multiValue: (provided) => ({
+        ...provided,
+        backgroundColor: 'var(--divider-gray)'
+    }),
+    multiValueLabel: (provided) => ({
+        ...provided,
+        color: 'white',
+    }),
+    multiValueRemove: (provided) => ({
+        ...provided,
+        color: 'white',
+        cursor: 'pointer',
+    }),
+    dropdownIndicator: base => ({
+        ...base,
+        fontSize: '1.3rem',
+        cursor: 'pointer',
+        ':hover': {
+            color: 'var(--blue)',
+        }
+    }),
+    clearIndicator: base => ({
+        ...base,
+        display: 'none',
+    }),
+    indicatorSeparator: base => ({
+        ...base,
+        display: 'none',
+    }),
+};
+
+export const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, t_status, t_record, t_score }) => {
     const navigate = useNavigate();
-    const [tagOptions, setTagOptions] = useState([]);
+    const [tagOptions, setTagOptions] = useState(globalTags);
     const [isTracking, setIsTracking] = useState(t_status);
     const [tracking_id, setTracking_id] = useState(t_record ? t_record.id : null);
     const [currentScore, setCurrentScore] = useState(t_score);
-
-    const createRecord = (description, startDate, tags) => {
-        const controller = new AbortController();
-
-        Axios.post(apiServerIp + '/api/post/tracking/create', {
-            user_id: 'self',
-            description: description,
-            start_date: startDate,
-            status: 1,
-            tags: tags
-        }, { signal: controller.signal })
-            .then(response => {
-                if (response.data.status === 1) {
-                    setTracking_id(response.data.tracking_id);
-                }
-            })
-            .catch(error => {
-                if (error.name === 'AbortError') {
-                    console.log('Aborted');
-                }
-                else {
-                    console.log(error);
-                }
-            });
-
-        return () => controller.abort();
-    }
-
-    const updateRecord = (data, reload = false) => {
-        const controller = new AbortController();
-        const id = t_record ? t_record.id : tracking_id;
-
-        // , description, startDate, endDate, tags, status, 
-        if (!id || !data) return;
-
-        const { description, start_date, end_date, tags, status, user_id, score } = data;
-
-        Axios.post(apiServerIp + '/api/post/tracking/update', {
-            user_id: user_id || 'self',
-            tracking_id: id,
-            description: description,
-            start_date: start_date,
-            end_date: end_date,
-            tags: JSON.stringify(tags),
-            status: status,
-            score: score,
-        }, { signal: controller.signal })
-            .then(response => {
-                if (response.data.status === 1 && reload) {
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                if (error.name === 'AbortError') {
-                    console.log('Aborted');
-                }
-                else {
-                    console.log(error);
-                }
-            });
-
-        return () => controller.abort();
-    }
-
-    const deleteRecord = (id) => {
-        const controller = new AbortController();
-
-        Axios.post(apiServerIp + '/api/post/tracking/delete', {
-            tracking_id: id
-        }, { signal: controller.signal })
-            .then(response => {
-                if (response.data.status === 1) {
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                if (error.name === 'AbortError') {
-                    console.log('Aborted');
-                }
-                else {
-                    console.log(error);
-                }
-            });
-
-        return () => controller.abort();
-    }
-
-    const getTags = (target) => {
-        let tags = [];
-
-        if (target === null || target === undefined) {
-            target = document.querySelectorAll('.quick .react-select__multi-value__label');
-
-            if (target == null) return;
-        }
-
-        if (typeof target.forEach !== 'function') {
-            tags.push(target.textContent);
-            return tags;
-        }
-
-        target.forEach((tag) => {
-            tags.push(tag.textContent);
-        });
-
-        return tags;
-    }
-
-    const handleStarClick = (event) => {
-        const scoreInput = event.target.closest('.score').querySelector('input[type="number"]');
-
-        if (scoreInput === undefined || scoreInput === null) return;
-
-        let value = scoreInput.value;
-        if (value === undefined || value === null) return;
-
-        if (value === '0') {
-            scoreInput.value = 5;
-        } else {
-            scoreInput.value = 0;
-        }
-
-        setCurrentScore(scoreInput.value);
-        updateRecord({
-            score: parseInt(scoreInput.value)
-        });
-    }
 
     const handleTimeChange = (time, label, action = "none") => {
         if ((time === null || time === undefined) || (time && (time.value === undefined || time.value == null))) {
             const startDateInput = document.querySelector('.quick input[type="datetime-local"]').value;
             time = { value: moment(startDateInput || t_start_date).format('YYYY-MM-DDTHH:mm') || moment().format('YYYY-MM-DDTHH:mm') };
         }
+
         if (label === null || label === undefined) {
             label = document.querySelector('.quick label.time');
         }
@@ -275,7 +198,6 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
                 label.innerText = "00:00:00";
                 return;
             }
-            else time = moment(startTime).format('YYYY-MM-DDTHH:mm');
         }
 
 
@@ -290,7 +212,7 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
             updateRecord({
                 start_date: startTime,
                 end_date: document.querySelector('.quick input[type="datetime-local"]').value + ":" + moment().format('ss'),
-            });
+            }, t_record, tracking_id);
         }
     }
 
@@ -309,7 +231,8 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
                 createRecord(
                     document.querySelector('.quick input.descriptionInput').value,
                     document.querySelector('.quick input.startDate').value + ":" + label.dataset.startedAtSeconds,
-                    getTags()
+                    getTags(),
+                    setTracking_id
                 );
                 t_status = 1;
             }
@@ -330,14 +253,6 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
 
     useEffect(() => {
         document.title = "Tracking | Void";
-        setTagOptions([
-            { value: 'Tag 1', label: 'Tag 1' },
-            { value: 'Tag 2', label: 'Tag 2' },
-            { value: 'Tag 3', label: 'Tag 3' },
-            { value: 'Tag 4', label: 'Tag 4' },
-            { value: 'Tag 5', label: 'Tag 5' },
-            { value: 'Tag 6', label: 'Tag 6' },
-        ]);
 
         if (type !== 'quick') return;
         document.querySelector('.quick input.startDate').value = moment(t_start_date).format('YYYY-MM-DD HH:mm');
@@ -345,6 +260,14 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
 
     return (
         <div className={"box " + type}>
+
+            {t_record && t_record.author && (
+                <div className="author">
+                    <img src={t_record.author.user_avatar_url} alt="avatar" />
+                    <span>{t_record.author.user_name}</span>
+                </div>
+            )}
+
             <div className="description">
                 <input className="descriptionInput" type="text" placeholder="Enter description" maxLength={255} onBlur={(event) => {
                     if (type === 'quick' && !isTracking) return;
@@ -355,7 +278,7 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
 
                     updateRecord({
                         description: boxBase.querySelector('input.descriptionInput').value
-                    });
+                    }, t_record, tracking_id);
                 }} defaultValue={t_description || ""} />
             </div>
 
@@ -386,57 +309,12 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
 
                             updateRecord({
                                 tags: tags,
-                            });
+                            }, t_record, tracking_id);
                         }}
                         defaultValue={(t_tags && JSON.parse(t_tags).map((tag) => {
                             return { value: tag, label: tag };
                         })) || []}
-                        styles={{
-                            control: base => ({
-                                ...base,
-                                border: 0,
-                                // This line disable the blue border
-                                boxShadow: 'none',
-                                display: 'flex',
-                                justifyContent: 'right',
-                            }),
-                            option: (provided) => ({
-                                ...provided,
-                                backgroundColor: 'var(--divider-gray)',
-                                ':hover': {
-                                    backgroundColor: 'var(--blue)',
-                                },
-                            }),
-                            multiValue: (provided) => ({
-                                ...provided,
-                                backgroundColor: 'var(--divider-gray)',
-                            }),
-                            multiValueLabel: (provided) => ({
-                                ...provided,
-                                color: 'white',
-                            }),
-                            multiValueRemove: (provided) => ({
-                                ...provided,
-                                color: 'white',
-                                cursor: 'pointer',
-                            }),
-                            dropdownIndicator: base => ({
-                                ...base,
-                                fontSize: '1.3rem',
-                                cursor: 'pointer',
-                                ':hover': {
-                                    color: 'var(--blue)',
-                                }
-                            }),
-                            clearIndicator: base => ({
-                                ...base,
-                                display: 'none',
-                            }),
-                            indicatorSeparator: base => ({
-                                ...base,
-                                display: 'none',
-                            }),
-                        }}
+                        styles={SelectStyles}
                     />
 
                 </div>
@@ -446,7 +324,6 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
                         <input type="number" min="0" max="5" maxLength={1} defaultValue={t_score} onChange={(e) => {
                             if (e.target.value < 0 || e.target.value > 5) {
                                 e.target.value = currentScore;
-                                return;
                             }
                         }} onBlur={(event) => {
                             const value = event.target.value;
@@ -456,15 +333,16 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
                             setCurrentScore(value);
                             updateRecord({
                                 score: value
-                            });
+                            }, t_record, tracking_id);
                         }} />
-                        <div className="star-icon" onClick={(event) => handleStarClick(event)}>
+                        <div className="star-icon" onClick={(event) => handleStarClick(event, setCurrentScore, t_record, tracking_id)}>
                             {currentScore.toString() === '0' ? <AiOutlineStar /> : <AiFillStar />}
                         </div>
                     </div>
                 )}
 
                 <div className="duration">
+                    
                     {type && type.includes("quick") &&
                         < input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
                             handleTimeChange(event.target, event.target.parentElement.querySelector('label'), "update");
@@ -480,13 +358,13 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
                             }
 
                             const endDate = moment(t_start_date + ":" + moment(t_record.start_date).format("ss")).add(event.target.value, 'seconds').format("YYYY-MM-DD HH:mm:ss");
-                            console.log(endDate)
+                            // console.log(endDate)
 
                             if (endDate === moment(t_record.end_date).format("YYYY-MM-DD HH:mm:ss")) return;
 
                             updateRecord({
                                 end_date: endDate,
-                            });
+                            }, t_record, tracking_id);
 
                         }} />
                         :
@@ -517,7 +395,7 @@ const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, 
                                 end_date: moment().format('YYYY-MM-DDTHH:mm:ss'),
                                 tags: getTags(boxBase.querySelectorAll('.tags .react-select__multi-value__label')),
                                 status: 0
-                            }, true);
+                            }, t_record, tracking_id, true);
                         }
 
                         setIsTracking(!isTracking);

@@ -67,6 +67,9 @@ export const handleNavigationClick = (destination, navigate) => {
     else if (destination === "tracking") {
         return navigate('/dashboard/tracking');
     }
+    else if (destination === "records") {
+        return navigate('/dashboard/tracking/records');
+    }
 }
 
 export const handleLogout = (navigate) => {

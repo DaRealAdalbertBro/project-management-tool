@@ -1,3 +1,5 @@
+@import url("https://cdn.syncfusion.com/ej2/material.css");
+
 .tracking {
     width: 100%;
     height: 100%;
@@ -89,6 +91,14 @@
 
 .react-select__input-container {
     border: none !important;
+    color: var(--default-text) !important;
+}
+
+.react-select__placeholder {
+    color: var(--lighter-text) !important;
+}
+
+.react-select__single-value {
     color: var(--default-text) !important;
 }
 
@@ -224,4 +234,41 @@
 .tracking .box .score .star-icon svg {
     color: yellow;
     font-size: 1.3rem;
+}
+
+.tracking .box .author {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--default-text);
+    pointer-events: none;
+    opacity: 0.7;
+    margin-right: 56px;
+}
+
+.tracking .box .author img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+    object-position: center;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.tracking .records {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.data-list .filters {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 32px;
+    margin-top: 32px;
 }
