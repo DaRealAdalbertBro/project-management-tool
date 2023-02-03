@@ -26,8 +26,9 @@ module.exports = function (app, db_connection) {
         let status = request.body.status;
         let tags = request.body.tags;
         let score = request.body.score;
+        let new_user_id = request.body.new_user_id;
 
-        if (!tracking_id || (!tracking_id && !description && !startDate && !endDate && !status && !tags)) {
+        if (!tracking_id || (!tracking_id && !description && !startDate && !endDate && !status && !tags && !score && !new_user_id)) {
             return response.send({ status: 0, message: CONFIG.messages.NOTHING_TO_UPDATE });
         }
 
@@ -37,7 +38,6 @@ module.exports = function (app, db_connection) {
             description = validator.escape(description);
             updateObject.description = description;
         }
-
 
         if (startDate !== undefined) {
             try {
@@ -81,6 +81,12 @@ module.exports = function (app, db_connection) {
             } catch (error) {
                 return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
             }
+
+            for (let i = 0; i < tags.length; i++) {
+                if (typeof tags[i] !== 'string') {
+                    tags.splice(i, 1);
+                }
+            }
         }
 
         if (score !== undefined) {
@@ -99,8 +105,10 @@ module.exports = function (app, db_connection) {
         if (startDate && endDate && startDate > endDate) {
             return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
         }
-
-        console.log(updateObject)
+        new_user_id = validateInput.isUserIdValid(new_user_id);
+        if (new_user_id.status) {
+            updateObject.user_id = new_user_id.value;
+        }
 
         db_connection.query('UPDATE tracking SET ? WHERE id = ? AND user_id = ?', [updateObject, tracking_id, user_id.value], function (error, result) {
             if (error || (result && result.affectedRows === 0)) {

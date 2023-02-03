@@ -11,11 +11,8 @@ import makeAnimated from 'react-select/animated';
 import Checkbox from '../../Checkbox';
 import { CustomPopup } from '../../CustomPopup';
 
-// TODO
-// aby mohli vybirat cas podle datumu, ne podle cisilek 00:00:00
-// zprovoznit filtry
-// pridat kategorie a barvicky
-
+import { DateRangePicker, CustomProvider } from 'rsuite';
+import { getTheme } from '../../../utils/utils';
 
 const Records = () => {
     const [trackingHistory, setTrackingHistory] = useState([]);
@@ -24,8 +21,48 @@ const Records = () => {
     const [selectedTags, setSelectedTags] = useState([]);
     const [selectedAuthors, setSelectedAuthors] = useState([]);
     const [selectedDayInterval, setSelectedDayInterval] = useState([]);
+    const [selectedDateRange, setSelectedDateRange] = useState([]);
     const [shouldShowDateFilter, setShouldShowDateFilter] = useState(false);
     const [numOfStarsFilter, setNumOfStarsFilter] = useState(null);
+
+    const intervalFilterOptions = [
+        {
+            value: [
+                moment().startOf('week').format('YYYY-MM-DD'),
+                moment().endOf('week').format('YYYY-MM-DD')
+            ], label: 'This Week'
+        },
+        {
+            value: [
+                moment().subtract(1, 'week').startOf('week').format('YYYY-MM-DD'),
+                moment().subtract(1, 'week').endOf('week').format('YYYY-MM-DD')
+            ], label: 'Last Week'
+        },
+        {
+            value: [
+                moment().startOf('month').format('YYYY-MM-DD'),
+                moment().endOf('month').format('YYYY-MM-DD')
+            ], label: 'This Month'
+        },
+        {
+            value: [
+                moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
+                moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD')
+            ], label: 'Last Month'
+        },
+        {
+            value: [
+                moment().startOf('year').format('YYYY-MM-DD'),
+                moment().endOf('year').format('YYYY-MM-DD')
+            ], label: 'This Year'
+        },
+        {
+            value: [
+                moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
+                moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD')
+            ], label: 'Last Year'
+        },
+    ];
 
     // set popup variables
     const [popupActive, setPopupActive] = useState(false);
@@ -46,7 +83,7 @@ const Records = () => {
             {
                 params: {
                     user_id: selectedAuthors.length > 0 ? selectedAuthors.map(user => user.value) : authorOptions.map(user => user.user_id),
-                    daysInterval: selectedDayInterval,
+                    daysInterval: selectedDateRange.length > 0 ? selectedDateRange : selectedDayInterval,
                     recordsToSelect: 30,
                     tags: selectedTags.map(tag => tag.value),
                     numOfStarsFilter: numOfStarsFilter
@@ -54,7 +91,6 @@ const Records = () => {
                 signal: controller.signal
             })
             .then(response => {
-                console.log(response.data)
                 if (response.data.status === 1) {
                     setTrackingHistory(response.data.data);
                 }
@@ -70,7 +106,7 @@ const Records = () => {
             );
 
         return () => controller.abort();
-    }, [selectedTags, selectedAuthors, authorOptions, selectedDayInterval, numOfStarsFilter]);
+    }, [selectedTags, selectedAuthors, authorOptions, selectedDayInterval, numOfStarsFilter, selectedDateRange]);
 
     useEffect(() => {
         document.title = "Records | Void";
@@ -109,56 +145,40 @@ const Records = () => {
                 {/* filters */}
                 <div className="filters">
                     <div className="filter">
+                        <CustomProvider theme={getTheme()}>
+                            <DateRangePicker
+                                onChange={item => {
+                                    if (item === null || item.length === 0) {
+                                        setSelectedDateRange([]);
+                                        return;
+                                    }
+                                    const date1 = moment(item[0]).format('YYYY-MM-DD');
+                                    const date2 = moment(item[1]).format('YYYY-MM-DD');
+                                    if (date1 > date2) {
+                                        setSelectedDateRange([date2, date1]);
+                                    }
+                                    else {
+                                        setSelectedDateRange([date1, date2]);
+                                    }
+
+                                    setSelectedDayInterval(null);
+                                }}
+                                className="date-range-picker"
+                            />
+                        </CustomProvider>
+
+                    </div>
+
+                    <div className="filter">
                         {/* select dropdown for last week, this month, last month, this year, last year */}
                         <Select
-                            // make this week default
-                            defaultValue={{
-                                value: [
-                                    moment().startOf('week').format('YYYY-MM-DD'),
-                                    moment().endOf('week').format('YYYY-MM-DD')
-                                ], label: 'This Week'
-                            }}
-                            options={[
-                                {
-                                    value: [
-                                        moment().startOf('week').format('YYYY-MM-DD'),
-                                        moment().endOf('week').format('YYYY-MM-DD')
-                                    ], label: 'This Week'
-                                },
-                                {
-                                    value: [
-                                        moment().subtract(1, 'week').startOf('week').format('YYYY-MM-DD'),
-                                        moment().subtract(1, 'week').endOf('week').format('YYYY-MM-DD')
-                                    ], label: 'Last Week'
-                                },
-                                {
-                                    value: [
-                                        moment().startOf('month').format('YYYY-MM-DD'),
-                                        moment().endOf('month').format('YYYY-MM-DD')
-                                    ], label: 'This Month'
-                                },
-                                {
-                                    value: [
-                                        moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
-                                        moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD')
-                                    ], label: 'Last Month'
-                                },
-                                {
-                                    value: [
-                                        moment().startOf('year').format('YYYY-MM-DD'),
-                                        moment().endOf('year').format('YYYY-MM-DD')
-                                    ], label: 'This Year'
-                                },
-                                {
-                                    value: [
-                                        moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
-                                        moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD')
-                                    ], label: 'Last Year'
-                                },
-                            ]}
+                            maxMenuHeight={400}
+                            defaultValue={intervalFilterOptions[0]}
+                            options={intervalFilterOptions}
                             components={makeAnimated()}
                             isSearchable
                             isClearable
+                            isDisabled={selectedDateRange.length > 0}
                             placeholder="Select time period"
                             className="react-select-container"
                             classNamePrefix="react-select"
@@ -169,6 +189,7 @@ const Records = () => {
 
                     <div className="filter">
                         <Select
+                            maxMenuHeight={400}
                             id="tags-filter"
                             closeMenuOnSelect={false}
                             components={{ animatedComponents: makeAnimated() }}
@@ -184,6 +205,7 @@ const Records = () => {
 
                     <div className="filter">
                         <Select
+                            maxMenuHeight={400}
                             id="author-filter"
                             closeMenuOnSelect={false}
                             components={{ animatedComponents: makeAnimated() }}
@@ -193,8 +215,7 @@ const Records = () => {
                                     const name = author.user_name + "#" + author.user_tag;
 
                                     return { value: author.user_id, label: name }
-                                }
-                                )
+                                })
                             }
                             className="react-select-container"
                             classNamePrefix="react-select"
@@ -239,6 +260,10 @@ const Records = () => {
                     const seconds = difference.seconds();
                     let formattedDifference = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
+                    if (formattedDifference.includes('NaN')) {
+                        formattedDifference = undefined;
+                    }
+
                     let showDate = (shouldShowDateFilter && record.status === 0) ? true : false;
 
                     return (
@@ -255,6 +280,7 @@ const Records = () => {
                             t_score={record.score}
                             t_show_date={showDate}
                             popupContext={popupContext}
+                            authorOptions={authorOptions}
                         />
                     )
                 })}

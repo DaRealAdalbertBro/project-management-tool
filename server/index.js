@@ -2,6 +2,13 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+
+// check if there is a .env file
+if (!fs.existsSync(path.join(__dirname, './.env'))) {
+    console.log("ERROR: .env file not found! Use the template in .env.example to create one.");
+    process.exit(1);
+}
 
 // import .env
 require('dotenv').config({
@@ -12,9 +19,6 @@ require('dotenv').config({
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-
-// import fs from node.js packages
-const fs = require('fs')
 
 if (!fs.existsSync(path.join(__dirname, '/cdn/'))) {
     fs.mkdirSync(path.join(__dirname, '/cdn/'));

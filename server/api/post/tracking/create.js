@@ -19,7 +19,7 @@ module.exports = function (app, db_connection) {
         if (!user_id.status) {
             return response.send({ status: 0, message: CONFIG.messages.USER_NOT_FOUND });
         }
-        
+
         const description = request.body.description.toString();
         let start_date = request.body.start_date;
         const status = request.body.status || 0;
@@ -41,12 +41,19 @@ module.exports = function (app, db_connection) {
 
         start_date = moment(start_date).format('YYYY-MM-DD HH:mm:ss');
 
-        db_connection.query('INSERT INTO tracking (user_id, description, start_date, tags, status) VALUES (?, ?, ?, ?, ?)', [user_id.value, description, start_date, tags, status], function (error, result) {
-            if (error || (result && result.affectedRows === 0)) {
+        // check if user has already created a tracking by status
+        db_connection.query(`SELECT id FROM tracking WHERE user_id = ? AND status = '1'`, [user_id.value], function (error, result) {
+            if (error || (result && result.length > 0)) {
                 return response.send({ status: 0, message: CONFIG.messages.TRACKING_FAILED });
             }
-            console.log(result.insertId)
-            return response.send({ status: 1, message: CONFIG.messages.TRACKING_CREATED, tracking_id: result.insertId });
+
+            db_connection.query('INSERT INTO tracking (user_id, description, start_date, tags, status) VALUES (?, ?, ?, ?, ?)', [user_id.value, description, start_date, tags, status], function (error, result) {
+                if (error || (result && result.affectedRows === 0)) {
+                    return response.send({ status: 0, message: CONFIG.messages.TRACKING_FAILED });
+                }
+                return response.send({ status: 1, message: CONFIG.messages.TRACKING_CREATED, tracking_id: result.insertId });
+            });
+
         });
 
     });

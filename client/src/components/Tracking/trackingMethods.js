@@ -17,6 +17,7 @@ export const createRecord = (description, startDate, tags, setTracking_id, popup
                 setTracking_id(response.data.tracking_id);
                 return;
             }
+
             // show error popup
             UpdateCustomPopup(popupContext.active,
                 popupContext.title,
@@ -43,10 +44,11 @@ export const updateRecord = (data, t_record, tracking_id, popupContext, reload =
     const id = t_record ? t_record.id : tracking_id;
 
     if (!id || !data) return;
-    const { description, start_date, end_date, tags, status, user_id, score } = data;
+    const { description, start_date, end_date, tags, status, user_id, new_user_id, score } = data;
 
     Axios.post(apiServerIp + '/api/post/tracking/update', {
         user_id: user_id || (t_record && t_record.user_id) || 'self',
+        new_user_id: new_user_id,
         tracking_id: id,
         description: description,
         start_date: start_date,
@@ -94,7 +96,6 @@ export const deleteRecord = (t_record, popupContext, reload = true) => {
         user_id: t_record.user_id || 'self',
     }, { signal: controller.signal })
         .then(response => {
-            console.log(response.data)
             if (response.data.status === 1 && reload) {
                 window.location.reload();
                 return;
@@ -157,7 +158,6 @@ export const fetchByFilter = (options) => {
             signal: controller.signal
         })
         .then(response => {
-            console.log(response.data)
             if (response.data.status === 1) {
                 options.setTrackingHistory(response.data.data);
             }
