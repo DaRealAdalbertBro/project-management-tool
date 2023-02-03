@@ -2,6 +2,7 @@ module.exports = function (app, db_connection) {
     const CONFIG = require("../../../config.json");
     const validateInput = require('../../../utils/validateInput')();
     const validator = require("validator").default;
+    const moment = require("moment");
 
     app.get("/api/get/tracking/fetchByFilter", (request, response) => {
         // check if user has permissions to update users
@@ -13,16 +14,15 @@ module.exports = function (app, db_connection) {
         let recordsToSelect = validator.escape(request.query.recordsToSelect) || 30;
         let tags = request.query.tags;
         let daysInterval = request.query.daysInterval;
+        let numOfStarsFilter = request.query.numOfStarsFilter;
 
         if (recordsToSelect < 0 || recordsToSelect > 365) {
             recordsToSelect = 30;
         }
 
-        console.log(daysInterval)
-
         const filterOptions = {};
 
-        if (user_id && user_id.length > 0) {
+        if (user_id !== undefined && user_id.length > 0) {
             if (!Array.isArray(user_id)) {
                 user_id = user_id.split(",");
             }
@@ -44,50 +44,64 @@ module.exports = function (app, db_connection) {
                 }
 
                 user_id[index] = id.value;
-
             });
 
             filterOptions.user_id = user_id;
         }
 
-        // try parsing daysInterval array that has 2 dates and check these dates
-        // if dates are not valid, set daysInterval to this week
-        // if dates are valid, store them to filterOptions.daysInterval array
-        if (daysInterval) {
+        if (daysInterval !== undefined && daysInterval !== null) {
             if (!Array.isArray(daysInterval)) {
                 daysInterval = daysInterval.split(",");
             }
 
             if (daysInterval.length === 2) {
-                // try parsing dates
                 try {
-                    daysInterval[0] = new Date(daysInterval[0]);
-                    daysInterval[1] = new Date(daysInterval[1]);
-
-                    filterOptions.daysInterval = daysInterval;
-                } catch (error) {
-                    const date = new Date();
-                    const day = date.getDay();
-                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-
-                    filterOptions.daysInterval = [new Date(date.setDate(diff)), new Date()];
+                    daysInterval[0] = moment(daysInterval[0]).format('YYYY-MM-DD HH:mm:ss');
+                    daysInterval[1] = moment(daysInterval[1]).format('YYYY-MM-DD HH:mm:ss');
+                }
+                catch (error) {
+                    daysInterval = null;
                 }
 
+                if (daysInterval !== null) {
+                    filterOptions.daysInterval = daysInterval;
+                } else {
+                    filterOptions.daysInterval = [
+                        moment().startOf('week').format('YYYY-MM-DD HH:mm:ss'),
+                        moment().endOf('week').format('YYYY-MM-DD HH:mm:ss')
+                    ];
+                }
+
+                if (daysInterval[0] > daysInterval[1]) {
+                    filterOptions.daysInterval = [daysInterval[1], daysInterval[0]];
+                }
             }
 
         }
-
         if (!filterOptions.daysInterval
             || filterOptions.daysInterval.length !== 2
-            || filterOptions.daysInterval[0] > filterOptions.daysInterval[1]
-            || filterOptions.daysInterval[0] > new Date()
-            || filterOptions.daysInterval[1] > new Date()) {
-            console.log("RESET INTERVAL")
-            const date = new Date();
-            const day = date.getDay();
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            || filterOptions.daysInterval[0] > filterOptions.daysInterval[1]) {
+            filterOptions.daysInterval = [
+                moment().startOf('week').format('YYYY-MM-DD HH:mm:ss'),
+                moment().endOf('week').format('YYYY-MM-DD HH:mm:ss')
+            ];
+        }
 
-            filterOptions.daysInterval = [new Date(date.setDate(diff)), new Date()];
+
+        if (numOfStarsFilter !== undefined && numOfStarsFilter !== null) {
+            try {
+                numOfStarsFilter = parseInt(numOfStarsFilter);
+            } catch (error) {
+                numOfStarsFilter = -1;
+            }
+
+            if (isNaN(numOfStarsFilter) || numOfStarsFilter < 0 || numOfStarsFilter > 5) {
+                numOfStarsFilter = -1;
+            }
+
+            if (numOfStarsFilter !== -1) {
+                filterOptions.numOfStarsFilter = numOfStarsFilter.toString();
+            }
         }
 
         try {
@@ -113,88 +127,33 @@ module.exports = function (app, db_connection) {
             filterOptions.tags = tags;
         }
 
-        // let query = `SELECT * FROM tracking WHERE user_id IN (?) AND start_date BETWEEN ? AND ? - INTERVAL ? DAY ORDER BY start_date DESC LIMIT ?`;
-        // let values = [filterOptions.user_id, filterOptions.daysInterval[0], filterOptions.daysInterval[1], filterOptions.recordsToSelect];
-
-        // if (filterOptions.tags) {
-        //     const tagsQuery = filterOptions.tags.map((tag) => {
-        //         return `tags LIKE '%${tag}%'`;
-        //     }
-        //     ).join(" OR ");
-
-        //     query = `SELECT * FROM tracking WHERE user_id IN (?) AND start_date BETWEEN ? AND ? - INTERVAL ? DAY AND (${tagsQuery}) ORDER BY start_date DESC LIMIT ?`;
-        //     values = [filterOptions.user_id, filterOptions.daysInterval[0], filterOptions.daysInterval[1], filterOptions.recordsToSelect];
-        // }
-
-        // if (filterOptions.daysInterval) {
-        //     query = `SELECT * FROM tracking WHERE user_id IN (?) AND start_date BETWEEN ? AND ? ORDER BY start_date DESC LIMIT ?`;
-        //     values = [filterOptions.user_id, filterOptions.daysInterval[0], filterOptions.daysInterval[1], filterOptions.recordsToSelect];
-        // }
-
         let tagFilterQuery = "";
         let tagFilterValues = [];
 
-        // if (filterOptions.tags) {
-        //     // check for each tag if it is in tags column
-        //     // if it is, add it to tagFilterValues array
-        //     // if it is not, remove it from tags array
-        //     // look out for words like "javascript" and "javascripts"
-        //     // if tag is found, add it to tagFilterValues array
-        //     // if tag is not found, remove it from tags array
-        //     filterOptions.tags.forEach((tag, index) => {
-        //         if (tag === "") {
-        //             filterOptions.tags.splice(index, 1);
-        //             return;
-        //         }
-
-        //         tagFilterQuery += `tags LIKE ? OR `;
-        //         tagFilterValues.push(`%${tag}%`);
-        //     })
-
-        //     // remove last " OR " from tagFilterQuery
-        //     tagFilterQuery = tagFilterQuery.slice(0, -4);
-
-        //     // if there are no tags left, remove tagFilterQuery and tagFilterValues
-        //     if (filterOptions.tags.length === 0) {
-        //         tagFilterQuery = "";
-        //         tagFilterValues = [];
-        //     }
-
-        //     // if there are tags left, add "AND" to tagFilterQuery
-        //     if (filterOptions.tags.length > 0) {
-        //         tagFilterQuery = `AND (${tagFilterQuery})`;
-        //     }
-            
-        // }
-
         if (filterOptions.tags) {
-            tagFilterQuery = `AND tags REGEXP`;
             filterOptions.tags.forEach((tag, index) => {
                 if (tag === "") {
                     filterOptions.tags.splice(index, 1);
                     return;
                 }
 
-                tagFilterQuery += ` \\${tag}\\b OR`;
-                
+                tagFilterQuery += `tags LIKE ? AND `;
+                // escape tag from characters like # or + or ++, etc
+                tagFilterValues.push(`%${tag}%`);
             })
 
-            // remove last " OR " from tagFilterQuery
-            tagFilterQuery = tagFilterQuery.slice(0, -3);
+            tagFilterQuery = tagFilterQuery.slice(0, -4);
 
-            // if there are no tags left, remove tagFilterQuery and tagFilterValues
             if (filterOptions.tags.length === 0) {
                 tagFilterQuery = "";
                 tagFilterValues = [];
             }
 
-            // if there are tags left, add "AND" to tagFilterQuery
             if (filterOptions.tags.length > 0) {
                 tagFilterQuery = `AND (${tagFilterQuery})`;
             }
-            
         }
-        console.log(tagFilterQuery)
+
 
         let dayFilterQuery = "";
         let dayFilterValues = [];
@@ -204,8 +163,15 @@ module.exports = function (app, db_connection) {
             dayFilterValues = [filterOptions.daysInterval[0], filterOptions.daysInterval[1]];
         }
 
-        let query = `SELECT * FROM tracking WHERE user_id IN (?) ${tagFilterQuery} ${dayFilterQuery} ORDER BY start_date DESC LIMIT ?`;
-        let values = [filterOptions.user_id, ...tagFilterValues, ...dayFilterValues, filterOptions.recordsToSelect];
+        let starFilterQuery = "";
+        let starFilterValues = [];
+        if (filterOptions.numOfStarsFilter) {
+            starFilterQuery = `AND score = ?`;
+            starFilterValues = [filterOptions.numOfStarsFilter];
+        }
+
+        let query = `SELECT * FROM tracking WHERE user_id IN (?) ${tagFilterQuery} ${dayFilterQuery} ${starFilterQuery} ORDER BY start_date DESC LIMIT ?`;
+        let values = [filterOptions.user_id, ...tagFilterValues, ...dayFilterValues, ...starFilterValues, filterOptions.recordsToSelect];
 
         db_connection.query(query, values, (error, result) => {
             if (error || (result && result.affectedRows === 0)) {

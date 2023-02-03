@@ -1,7 +1,8 @@
 import Axios from 'axios';
+import { UpdateCustomPopup } from '../CustomPopup';
 import { apiServerIp } from '../globalVariables';
 
-export const createRecord = (description, startDate, tags, setTracking_id) => {
+export const createRecord = (description, startDate, tags, setTracking_id, popupContext) => {
     const controller = new AbortController();
 
     Axios.post(apiServerIp + '/api/post/tracking/create', {
@@ -14,7 +15,16 @@ export const createRecord = (description, startDate, tags, setTracking_id) => {
         .then(response => {
             if (response.data.status === 1) {
                 setTracking_id(response.data.tracking_id);
+                return;
             }
+            // show error popup
+            UpdateCustomPopup(popupContext.active,
+                popupContext.title,
+                [
+                    (response.data && response.data.message) || popupContext.message[0],
+                    popupContext.message[1]
+                ]
+            );
         })
         .catch(error => {
             if (error.name === 'CanceledError') {
@@ -28,17 +38,15 @@ export const createRecord = (description, startDate, tags, setTracking_id) => {
     return () => controller.abort();
 }
 
-export const updateRecord = (data, t_record, tracking_id, reload = false) => {
+export const updateRecord = (data, t_record, tracking_id, popupContext, reload = false) => {
     const controller = new AbortController();
     const id = t_record ? t_record.id : tracking_id;
-    
-    // , description, startDate, endDate, tags, status, 
-    if (!id || !data) return;
 
+    if (!id || !data) return;
     const { description, start_date, end_date, tags, status, user_id, score } = data;
 
     Axios.post(apiServerIp + '/api/post/tracking/update', {
-        user_id: user_id || 'self',
+        user_id: user_id || (t_record && t_record.user_id) || 'self',
         tracking_id: id,
         description: description,
         start_date: start_date,
@@ -48,10 +56,21 @@ export const updateRecord = (data, t_record, tracking_id, reload = false) => {
         score: score,
     }, { signal: controller.signal })
         .then(response => {
-            console.log(response)
             if (response.data.status === 1 && reload) {
                 window.location.reload();
+                return;
+            } else if (response.data.status === 1) {
+                return;
             }
+
+            // show error popup
+            UpdateCustomPopup(popupContext.active,
+                popupContext.title,
+                [
+                    (response.data && response.data.message) || popupContext.message[0],
+                    popupContext.message[1]
+                ]
+            );
         })
         .catch(error => {
             if (error.name === 'CanceledError') {
@@ -65,16 +84,32 @@ export const updateRecord = (data, t_record, tracking_id, reload = false) => {
     return () => controller.abort();
 }
 
-export const deleteRecord = (id) => {
+export const deleteRecord = (t_record, popupContext, reload = true) => {
     const controller = new AbortController();
 
+    if (!t_record) return;
+
     Axios.post(apiServerIp + '/api/post/tracking/delete', {
-        tracking_id: id
+        tracking_id: t_record.id,
+        user_id: t_record.user_id || 'self',
     }, { signal: controller.signal })
         .then(response => {
-            if (response.data.status === 1) {
+            console.log(response.data)
+            if (response.data.status === 1 && reload) {
                 window.location.reload();
+                return;
+            } else if (response.data.status === 1) {
+                return;
             }
+
+            // show error popup
+            UpdateCustomPopup(popupContext.active,
+                popupContext.title,
+                [
+                    (response.data && response.data.message) || popupContext.message[0],
+                    popupContext.message[1]
+                ]
+            );
         })
         .catch(error => {
             if (error.name === 'CanceledError') {
@@ -86,27 +121,6 @@ export const deleteRecord = (id) => {
         });
 
     return () => controller.abort();
-}
-
-export const getTags = (target) => {
-    let tags = [];
-
-    if (target === null || target === undefined) {
-        target = document.querySelectorAll('.quick .react-select__multi-value__label');
-
-        if (target == null) return;
-    }
-
-    if (typeof target.forEach !== 'function') {
-        tags.push(target.textContent);
-        return tags;
-    }
-
-    target.forEach((tag) => {
-        tags.push(tag.textContent);
-    });
-
-    return tags;
 }
 
 export const handleStarClick = (event, setCurrentScore, t_record, tracking_id) => {
@@ -127,4 +141,36 @@ export const handleStarClick = (event, setCurrentScore, t_record, tracking_id) =
     updateRecord({
         score: parseInt(scoreInput.value)
     }, t_record, tracking_id);
+}
+
+export const fetchByFilter = (options) => {
+    const controller = new AbortController();
+    Axios.get(apiServerIp + "/api/get/tracking/fetchByFilter",
+        {
+            params: {
+                user_id: options.selectedAuthors.length > 0 ? options.selectedAuthors.map(user => user.value) : options.authorOptions.map(user => user.user_id),
+                daysInterval: options.selectedDayInterval,
+                recordsToSelect: 30,
+                tags: options.selectedTags.map(tag => tag.value),
+                numOfStarsFilter: options.numOfStarsFilter
+            },
+            signal: controller.signal
+        })
+        .then(response => {
+            console.log(response.data)
+            if (response.data.status === 1) {
+                options.setTrackingHistory(response.data.data);
+            }
+        })
+        .catch(error => {
+            if (error.name === 'CanceledError') {
+                console.log('Aborted');
+            }
+            else {
+                console.log(error);
+            }
+        }
+        );
+
+    return () => controller.abort();
 }

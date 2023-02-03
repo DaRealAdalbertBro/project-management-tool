@@ -14,19 +14,20 @@
     width: 100%;
 }
 
-.tracking h2 {
+.tracking .data-list h2 {
+    font-size: 1.3rem;
+    opacity: 0.8;
+    border-bottom: 1px var(--divider-gray) dotted;
+}
+
+.tracking h2,
+.records .data-list h2 {
     font-size: 1.7rem;
     width: 100%;
     padding-bottom: 4px;
     color: var(--default-text);
     border-bottom: 1px solid var(--divider-gray);
     font-weight: 300;
-}
-
-.tracking .data-list h2 {
-    font-size: 1.3rem;
-    opacity: 0.8;
-    border-bottom: 1px var(--divider-gray) dotted;
 }
 
 .tracking .box {
@@ -257,18 +258,121 @@
     user-select: none;
     -webkit-user-drag: none;
 }
-
-.tracking .records {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
+.records .data-list {
+    margin-top: 0px;
 }
 
-.data-list .filters {
+.records  .data-list .filters {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 32px;
-    margin-top: 32px;
+    margin-bottom: 32px;
 }
+
+.records  .data-list .filters .filter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-checked {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background-color: transparent;
+    color: var(--default-text);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    gap: 24px;
+    width: 192px;
+}
+
+.date-checked span {
+    font-size: 1rem;
+    transition: color 0.2s ease-in-out;
+}
+
+.date-checked input {
+    width: 24px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: var(--default-text);
+}
+
+/* Chrome, Safari, Edge, Opera */
+.date-checked input::-webkit-outer-spin-button,
+.date-checked input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.date-checked input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.date-checked span:hover {
+    color: var(--green-hover);
+    user-select: none;
+}
+
+.records .filter.date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.records .filter.date label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.records .filter.star {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    user-select: none;
+}
+
+.records .filter.star input {
+    width: 24px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: var(--lighter-text);
+    border-bottom: 1px solid var(--divider-gray);
+}
+
+/* Chrome, Safari, Edge, Opera */
+.records .filter.star input::-webkit-outer-spin-button,
+.records .filter.star input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.records .filter.star input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
+.records input[type="checkbox"]#show-dates {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--default-text);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    gap: 24px;
+}
+

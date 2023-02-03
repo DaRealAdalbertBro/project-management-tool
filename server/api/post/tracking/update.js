@@ -8,9 +8,9 @@ module.exports = function (app, db_connection) {
         if (!request.session.user) {
             return response.send({ status: 0, message: CONFIG.messages.NOT_LOGGED_IN });
         }
-
+        
         let user_id = validateInput.isUserIdValid(request.body.user_id);
-
+        
         if (user_id.value === "self" || !user_id.value) {
             user_id = validateInput.isUserIdValid(request.session.user.user_id);
         }
@@ -99,6 +99,8 @@ module.exports = function (app, db_connection) {
         if (startDate && endDate && startDate > endDate) {
             return response.send({ status: 0, message: CONFIG.messages.SOMETHING_WENT_WRONG });
         }
+
+        console.log(updateObject)
 
         db_connection.query('UPDATE tracking SET ? WHERE id = ? AND user_id = ?', [updateObject, tracking_id, user_id.value], function (error, result) {
             if (error || (result && result.affectedRows === 0)) {

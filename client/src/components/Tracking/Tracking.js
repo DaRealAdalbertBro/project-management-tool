@@ -6,11 +6,12 @@ import moment from 'moment';
 import Axios from 'axios';
 
 import { apiServerIp, globalTags } from '../globalVariables';
-import { createRecord, updateRecord, deleteRecord, getTags, handleStarClick } from "./trackingMethods";
+import { createRecord, updateRecord, deleteRecord, handleStarClick } from "./trackingMethods";
 
 import { AiFillPlayCircle, AiFillTags, AiFillPauseCircle, AiOutlineDelete, AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
 import './Tracking.css'
+import { CustomPopup } from "../CustomPopup";
 
 const animatedComponents = makeAnimated();
 
@@ -27,9 +28,23 @@ const Tracking = () => {
     const [trackingHistory, setTrackingHistory] = useState([]);
     let quickIndex = 0;
 
-    useEffect(() => {
-        const controller = new AbortController();
+    // set popup variables
+    const [popupActive, setPopupActive] = useState(false);
+    const [popupTitle, setPopupTitle] = useState("Warning");
+    const [popupMessage, setPopupMessage] = useState("Something went wrong... Try again later!");
 
+    // declare popup context
+    // this is used to pass popup variables to other components
+    const popupContext = {
+        active: [popupActive, setPopupActive],
+        title: [popupTitle, setPopupTitle],
+        message: [popupMessage, setPopupMessage],
+    };
+
+    useEffect(() => {
+        document.title = "Tracking | Void";
+
+        const controller = new AbortController();
         Axios.get(apiServerIp + "/api/get/tracking/fetch",
             {
                 params: {
@@ -58,6 +73,7 @@ const Tracking = () => {
 
     return (
         <div className="tracking">
+            {popupActive && <CustomPopup title={popupTitle} message={popupMessage} setActive={setPopupActive} />}
             <div className="header">
                 <h2>Quick Access</h2>
 
@@ -67,8 +83,12 @@ const Tracking = () => {
                     }
 
                     if (record.status === 1) {
-                        const timeDifference = moment().diff(moment(record.start_date), 'seconds');
-                        const formattedDifference = moment.utc(timeDifference * 1000).format('HH:mm:ss');
+                        let difference = moment.duration(moment(record.end_date).diff(moment(record.start_date)));
+                        const hours = difference.hours() + (difference.days() * 24);
+                        const minutes = difference.minutes();
+                        const seconds = difference.seconds();
+
+                        let formattedDifference = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                         quickIndex++;
 
                         return (
@@ -81,6 +101,7 @@ const Tracking = () => {
                                 t_time_difference={formattedDifference}
                                 t_record={record}
                                 t_status={record.status}
+                                popupContext={popupContext}
                             />
                         );
                     }
@@ -95,8 +116,11 @@ const Tracking = () => {
                 {
                     trackingHistory.map((record) => {
                         if (record.status !== 1) {
-                            const timeDifference = moment(record.end_date).diff(moment(record.start_date), 'seconds');
-                            const formattedDifference = moment.utc(timeDifference * 1000).format('HH:mm:ss');
+                            let difference = moment.duration(moment(record.end_date).diff(moment(record.start_date)));
+                            const hours = difference.hours() + (difference.days() * 24);
+                            const minutes = difference.minutes();
+                            const seconds = difference.seconds();
+                            let formattedDifference = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
                             return (
                                 <Record
@@ -108,6 +132,7 @@ const Tracking = () => {
                                     t_time_difference={formattedDifference}
                                     t_record={record}
                                     t_score={record.score || 0}
+                                    popupContext={popupContext}
                                 />
                             )
                         }
@@ -166,12 +191,13 @@ export const SelectStyles = {
     }),
 };
 
-export const Record = ({ type, t_description, t_tags, t_start_date, t_time_difference, t_status, t_record, t_score }) => {
+export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, t_time_difference, t_status, t_record, t_score, popupContext, t_show_date = false }) => {
     const navigate = useNavigate();
     const [tagOptions, setTagOptions] = useState(globalTags);
     const [isTracking, setIsTracking] = useState(t_status);
     const [tracking_id, setTracking_id] = useState(t_record ? t_record.id : null);
     const [currentScore, setCurrentScore] = useState(t_score);
+    const [selectedTags, setSelectedTags] = useState(t_tags ? t_tags.split(',') : []);
 
     const handleTimeChange = (time, label, action = "none") => {
         if ((time === null || time === undefined) || (time && (time.value === undefined || time.value == null))) {
@@ -200,7 +226,6 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
             }
         }
 
-
         const hours = Math.floor(diff / 1000 / 60 / 60);
         const minutes = Math.floor(diff / 1000 / 60) - (hours * 60);
         const seconds = Math.floor(diff / 1000) - (hours * 60 * 60) - (minutes * 60);
@@ -212,7 +237,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
             updateRecord({
                 start_date: startTime,
                 end_date: document.querySelector('.quick input[type="datetime-local"]').value + ":" + moment().format('ss'),
-            }, t_record, tracking_id);
+            }, t_record, tracking_id, popupContext);
         }
     }
 
@@ -231,8 +256,8 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
                 createRecord(
                     document.querySelector('.quick input.descriptionInput').value,
                     document.querySelector('.quick input.startDate').value + ":" + label.dataset.startedAtSeconds,
-                    getTags(),
-                    setTracking_id
+                    selectedTags.map(tag => tag.value),
+                    setTracking_id, popupContext
                 );
                 t_status = 1;
             }
@@ -252,8 +277,6 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
     }, [type, isTracking, t_status, t_record]);
 
     useEffect(() => {
-        document.title = "Tracking | Void";
-
         if (type !== 'quick') return;
         document.querySelector('.quick input.startDate').value = moment(t_start_date).format('YYYY-MM-DD HH:mm');
     }, [navigate, type, t_start_date]);
@@ -261,7 +284,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
     return (
         <div className={"box " + type}>
 
-            {t_record && t_record.author && (
+            {t_record && t_record.author && type !== "quick" && type.includes("record") && (
                 <div className="author">
                     <img src={t_record.author.user_avatar_url} alt="avatar" />
                     <span>{t_record.author.user_name}</span>
@@ -278,7 +301,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
 
                     updateRecord({
                         description: boxBase.querySelector('input.descriptionInput').value
-                    }, t_record, tracking_id);
+                    }, t_record, tracking_id, popupContext);
                 }} defaultValue={t_description || ""} />
             </div>
 
@@ -302,18 +325,25 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
                         onBlur={(e) => {
                             if (type === "quick" && !isTracking) return;
 
-                            const boxBase = e.target.closest('.box');
-                            const tags = getTags(boxBase.querySelectorAll('.tags .react-select__multi-value__label'));
+                            const tags = selectedTags.map(tag => tag.value);
 
                             if (JSON.stringify(tags) === t_tags) return;
 
                             updateRecord({
                                 tags: tags,
-                            }, t_record, tracking_id);
+                            }, t_record, tracking_id, popupContext);
                         }}
                         defaultValue={(t_tags && JSON.parse(t_tags).map((tag) => {
-                            return { value: tag, label: tag };
+                            if (!tag) return;
+
+                            return {
+                                value: tag,
+                                label: tag
+                            }
                         })) || []}
+                        onChange={(e) => {
+                            setSelectedTags(e);
+                        }}
                         styles={SelectStyles}
                     />
 
@@ -333,7 +363,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
                             setCurrentScore(value);
                             updateRecord({
                                 score: value
-                            }, t_record, tracking_id);
+                            }, t_record, tracking_id, popupContext);
                         }} />
                         <div className="star-icon" onClick={(event) => handleStarClick(event, setCurrentScore, t_record, tracking_id)}>
                             {currentScore.toString() === '0' ? <AiOutlineStar /> : <AiFillStar />}
@@ -342,14 +372,14 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
                 )}
 
                 <div className="duration">
-                    
+
                     {type && type.includes("quick") &&
                         < input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
                             handleTimeChange(event.target, event.target.parentElement.querySelector('label'), "update");
                         }} />
                     }
-                    {type && !type.includes("quick") ?
-                        <input className="time" type="text" placeholder="00:00:00" defaultValue={t_time_difference} onBlur={(event) => {
+                    {type && !type.includes("quick") && !t_show_date ?
+                        <input className="time" type="text" placeholder="00:00:00" defaultValue={t_status ? "RUNNING" : t_time_difference} onBlur={(event) => {
                             // Check if the input is valid (HH:mm:ss) but hours can be up to 999
                             const regex = /^([0-9]{1,3}):([0-5][0-9]):([0-5][0-9])$/;
                             if (!regex.test(event.target.value)) {
@@ -360,21 +390,64 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
                             const endDate = moment(t_start_date + ":" + moment(t_record.start_date).format("ss")).add(event.target.value, 'seconds').format("YYYY-MM-DD HH:mm:ss");
                             // console.log(endDate)
 
-                            if (endDate === moment(t_record.end_date).format("YYYY-MM-DD HH:mm:ss")) return;
+                            if (endDate === moment(t_end_date).format("YYYY-MM-DD HH:mm:ss")) return;
 
                             updateRecord({
                                 end_date: endDate,
-                            }, t_record, tracking_id);
+                            }, t_record, tracking_id, popupContext);
 
                         }} />
-                        :
+                        : !t_show_date &&
                         <label className="time">{t_time_difference || "00:00:00"}</label>
                     }
+
+                    {type && !type.includes("quick") && t_show_date && (
+                        <div className="date-checked">
+                            <span>Started: <input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
+                                if (event.target.value === t_start_date) {
+                                    return;
+                                }
+
+                                if (!moment(event.target.value).isValid()) {
+                                    event.target.value = t_start_date;
+                                    return;
+                                }
+
+                                if (moment(event.target.value).isAfter(moment(t_end_date))) {
+                                    event.target.value = t_start_date;
+                                    return;
+                                }
+
+                                updateRecord({
+                                    start_date: event.target.value,
+                                }, t_record, tracking_id, popupContext);
+                            }} /></span>
+                            <span>Ended: <input type="datetime-local" className="endDate" defaultValue={t_end_date} onChange={(event) => {
+                                if (event.target.value === t_end_date) {
+                                    return;
+                                }
+
+                                if (!moment(event.target.value).isValid()) {
+                                    event.target.value = t_end_date;
+                                    return;
+                                }
+
+                                if (moment(event.target.value).isBefore(moment(t_start_date))) {
+                                    event.target.value = t_end_date;
+                                    return;
+                                }
+
+                                updateRecord({
+                                    end_date: event.target.value,
+                                }, t_record, tracking_id, popupContext);
+                            }} /></span>
+                        </div>
+                    )}
 
                     {type && !type.includes("quick") &&
                         <button className="deleteButton" onClick={(event) => {
                             event.preventDefault();
-                            deleteRecord(t_record.id)
+                            deleteRecord(t_record, popupContext)
 
                         }} >
                             <AiOutlineDelete />
@@ -393,13 +466,12 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_time_diffe
                                 description: boxBase.querySelector('input.descriptionInput').value,
                                 start_date: boxBase.querySelector('input.startDate').value + ":" + boxBase.querySelector('.quick label.time').dataset.startedAtSeconds,
                                 end_date: moment().format('YYYY-MM-DDTHH:mm:ss'),
-                                tags: getTags(boxBase.querySelectorAll('.tags .react-select__multi-value__label')),
+                                tags: selectedTags.map(tag => tag.value),
                                 status: 0
-                            }, t_record, tracking_id, true);
+                            }, t_record, tracking_id, popupContext, true);
                         }
 
                         setIsTracking(!isTracking);
-
                     }} >
                         {isTracking ? <AiFillPauseCircle /> : <AiFillPlayCircle />}
                     </button>}

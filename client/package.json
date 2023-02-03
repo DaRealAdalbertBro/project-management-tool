@@ -21,7 +21,8 @@
     "react-icons": "^4.7.1",
     "react-router-dom": "^6.5.0",
     "react-scripts": "5.0.1",
-    "react-select": "^5.7.0"
+    "react-select": "^5.7.0",
+    "styled-components": "^5.3.6"
   },
   "scripts": {
     "start": "react-scripts start",
