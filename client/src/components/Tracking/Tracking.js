@@ -415,20 +415,15 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                 )}
 
                 <div className="duration">
-
                     {type && type.includes("quick") &&
-                        < input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
+                        <input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
                             handleTimeChange(event.target, event.target.parentElement.querySelector('label'), "update");
                         }} />
                     }
+
                     {type && !type.includes("quick") && !t_show_date ?
-                        <input className="time" type="text" placeholder="00:00:00" defaultValue={t_status ? "RUNNING" : t_time_difference} onBlur={(event) => {
-                            // Check if the input is valid (HH:mm:ss) but hours can be up to 999
-                            const regex = /^([0-9]{1,3}):([0-5][0-9]):([0-5][0-9])$/;
-                            if (!regex.test(event.target.value)) {
-                                event.target.value = t_time_difference;
-                                return;
-                            }
+                        <input className="time" type="text" placeholder="00:00:00" readOnly={t_status} defaultValue={t_status ? "RUNNING" : t_time_difference} onBlur={(event) => {
+                            if (t_status) return event.target.value = "RUNNING";
 
                             const endDate = moment(t_start_date + ":" + moment(t_record.start_date).format("ss")).add(event.target.value, 'seconds').format("YYYY-MM-DD HH:mm:ss");
 
@@ -438,6 +433,11 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                                 end_date: endDate,
                             }, t_record, tracking_id, popupContext);
 
+                        }} onChange={(event) => {
+                            const regex = /^([0-9]{1,3}):([0-5][0-9]):([0-5][0-9])$/;
+                            if (!regex.test(event.target.value)) {
+                                return event.target.value = t_time_difference;
+                            }
                         }} />
                         : !t_show_date &&
                         <label className="time">{t_time_difference || isTracking ? <LoadingCircle /> : "00:00:00"}</label>
@@ -486,45 +486,6 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                                         end_date: date,
                                     }, t_record, tracking_id, popupContext);
                                 }} />
-
-                            {/* <span>Started: <input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
-                                if (event.target.value === t_start_date) {
-                                    return;
-                                }
-
-                                if (!moment(event.target.value).isValid()) {
-                                    event.target.value = t_start_date;
-                                    return;
-                                }
-
-                                if (moment(event.target.value).isAfter(moment(t_end_date))) {
-                                    event.target.value = t_start_date;
-                                    return;
-                                }
-
-                                updateRecord({
-                                    start_date: event.target.value,
-                                }, t_record, tracking_id, popupContext);
-                            }} /></span>
-                            <span>Ended: <input type="datetime-local" className="endDate" defaultValue={t_end_date} onChange={(event) => {
-                                if (event.target.value === t_end_date) {
-                                    return;
-                                }
-
-                                if (!moment(event.target.value).isValid()) {
-                                    event.target.value = t_end_date;
-                                    return;
-                                }
-
-                                if (moment(event.target.value).isBefore(moment(t_start_date))) {
-                                    event.target.value = t_end_date;
-                                    return;
-                                }
-
-                                updateRecord({
-                                    end_date: event.target.value,
-                                }, t_record, tracking_id, popupContext);
-                            }} /></span> */}
                         </div>
                     )}
 

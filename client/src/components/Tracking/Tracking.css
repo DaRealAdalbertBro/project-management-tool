@@ -348,7 +348,7 @@
     border: none;
     outline: none;
     color: var(--lighter-text);
-    border-bottom: 1px solid var(--divider-gray);
+    border-bottom: 1px solid yellow;
 }
 
 /* Chrome, Safari, Edge, Opera */
