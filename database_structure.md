@@ -1,3 +1,5 @@
+MySQL version: 8.0.31
+
 ## CREATE THE DB
 
 ```
