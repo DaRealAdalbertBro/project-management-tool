@@ -34,8 +34,6 @@ export const login = (usernameRef, passwordRef, setLoginError, navigate) => {
         setLoginError('Something went wrong. Please try again later.');
     });
 
-    console.log("Axios sent login")
-
     // cleanup, abort request
     return () => controller.abort();
 }

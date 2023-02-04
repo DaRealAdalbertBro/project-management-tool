@@ -461,8 +461,6 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                                         return;
                                     }
 
-                                    console.log(date, t_end_date)
-
                                     updateRecord({
                                         start_date: date,
                                     }, t_record, tracking_id, popupContext);

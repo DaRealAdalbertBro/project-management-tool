@@ -5,7 +5,7 @@ import { apiServerIp, globalTags } from '../../globalVariables';
 import { Record, SelectStyles } from '../Tracking';
 import moment from 'moment';
 
-import Select, { components } from 'react-select';
+import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 
 import Checkbox from '../../Checkbox';
@@ -118,7 +118,6 @@ const Records = () => {
                 signal: controller.signal
             })
             .then(response => {
-                console.log(response)
                 if (response.data.status === 1) {
                     setAuthorOptions(response.data.users);
                 }
