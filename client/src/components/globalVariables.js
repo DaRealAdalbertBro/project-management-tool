@@ -33,9 +33,6 @@ export const NotFoundGif = [
     }
 ]
 
-<<<<<<< HEAD
-export const apiServerIp = "http://host.docker.internal:9001";
-=======
 export const apiServerIp = "http://localhost:9001";
 
 export const globalTags = [
@@ -46,4 +43,3 @@ export const globalTags = [
     { value: 'Python', label: 'Python' },
     { value: 'Rust', label: 'Rust' },
 ];
->>>>>>> main
