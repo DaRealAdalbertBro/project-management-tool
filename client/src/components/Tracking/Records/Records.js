@@ -228,11 +228,18 @@ const Records = () => {
                     <div className="filter star">
                         <label htmlFor="num-of-stars">Number of Stars:</label>
 
-                        <input type="number" min="0" max="5" maxLength={1} defaultValue={numOfStarsFilter} onChange={(e) => {
-                            if (e.target.value < 0 || e.target.value > 5) {
-                                e.target.value = numOfStarsFilter;
-                            } else {
+                        <input type="text" name="num-of-stars" className='num-of-stars' min="0" max="5" maxLength={1} defaultValue={numOfStarsFilter} onChange={(e) => {
+                            // allow only numbers between 0 and 5, dont allow characters lie e, etc
+                            if (e.target.value === "") {
+                                setNumOfStarsFilter(null);
+                                return;
+                            }
+
+                            const regex = /^[0-5\b]+$/;
+                            if (regex.test(e.target.value)) {
                                 setNumOfStarsFilter(e.target.value);
+                            } else {
+                                return e.target.value = numOfStarsFilter;
                             }
                         }} />
                     </div>
