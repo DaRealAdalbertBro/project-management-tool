@@ -47,8 +47,6 @@ export const register = (username, email, password, navigate) => {
                 return reject({ status: false, message: 'Something went wrong. Please try again later.' });
             }); // end of Axios.post
 
-        console.log("Axios sent register")
-
         // cleanup, abort request
         return () => controller.abort();
 

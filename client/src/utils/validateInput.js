@@ -137,7 +137,7 @@ export const isFileValid = (file) => {
 
     // check if the file is an image
     if (file.type !== "image/jpeg" && file.type !== "image/png" && file.type !== "image/gif"
-        && file.type !== "image/jfif" && file.type !== "image/bmp" && file.type !== "image/webp") {
+        && file.type !== "image/bmp" && file.type !== "image/webp") {
         return { status: false, value: file };
     }
 

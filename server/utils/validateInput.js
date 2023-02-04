@@ -1,5 +1,4 @@
 const validator = require('validator').default;
-const emailValidator = require('deep-email-validator');
 const CONFIG = require("../config.json");
 
 const isEmpty = (value) => {
@@ -14,6 +13,7 @@ const isUserIdValid = (value) => {
     // escape the input from dangerous characters
     value = validator.escape(value.toString());
     value = validator.trim(value);
+    const originalValue = value;
 
     // try parsing input
     try {
@@ -22,8 +22,7 @@ const isUserIdValid = (value) => {
         return { status: false, value: value };
     }
 
-    // return true if parsed
-    return { status: true, value: value };
+    return { status: !isNaN(value), value: !isNaN(value) ? value : originalValue };
 }
 
 const isUsernameValid = (value) => {

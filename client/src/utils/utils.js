@@ -372,8 +372,6 @@ export const isUserLoggedIn = (navigate) => {
         console.log(err);
     });
 
-    console.log("Axios sent is user logged in request.")
-
     // cleanup, abort request
     return () => controller.abort();
 };
@@ -399,8 +397,6 @@ export const checkUserPermissions = (navigate) => {
 
         console.log(err);
     });
-
-    console.log("Axios sent get user permissions request.")
 
     // cleanup, abort request
     return () => controller.abort();
@@ -432,7 +428,6 @@ export const getUserData = () => {
             });
         });
 
-        console.log("Axios sent get user data request.")
     });
 }
 

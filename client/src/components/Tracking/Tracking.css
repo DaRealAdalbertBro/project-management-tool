@@ -1,3 +1,4 @@
+@import "./rsuit-custom.css";
 .tracking {
     width: 100%;
     height: 100%;
@@ -12,7 +13,14 @@
     width: 100%;
 }
 
-.tracking .header h2 {
+.tracking .data-list h2 {
+    font-size: 1.3rem;
+    opacity: 0.8;
+    border-bottom: 1px var(--divider-gray) dotted;
+}
+
+.tracking h2,
+.records .data-list h2 {
     font-size: 1.7rem;
     width: 100%;
     padding-bottom: 4px;
@@ -69,7 +77,7 @@
 }
 
 .react-select__control {
-    background-color: var(--gray) !important;
+    background-color: transparent !important;
     border: none !important;
     width: auto;
     min-width: 192px;
@@ -77,12 +85,20 @@
 }
 
 .react-select__menu {
-    background-color: var(--gray) !important;
+    background-color: transparent !important;
     color: var(--default-text) !important;
 }
 
 .react-select__input-container {
     border: none !important;
+    color: var(--default-text) !important;
+}
+
+.react-select__placeholder {
+    color: var(--lighter-text) !important;
+}
+
+.react-select__single-value {
     color: var(--default-text) !important;
 }
 
@@ -124,5 +140,238 @@
     background-color: transparent;
     color: var(--purple);
     cursor: pointer;
+}
+
+.tracking .data-list {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.tracking .box.history {
+    margin-top: 8px;
+}
+
+.tracking .box.history .description input::placeholder {
+    opacity: 0;
+}
+
+.tracking .data-list .box {
+    opacity: 0.7;
+    background-color: var(--gray);
+    transition: opacity 0.2s ease-in-out;
+}
+
+.tracking .data-list .box:hover {
+    opacity: 1;
+}
+
+.tracking .data-list .box .duration input[type="text"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 86px;
+}
+
+.tracking .data-list .deleteButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    background-color: transparent;
+    color: var(--red);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.tracking .data-list .deleteButton:hover {
+    color: var(--red-hover);
+}
+
+.tracking .box .score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--default-text);
+    cursor: pointer;
+}
+
+.tracking .box .score input {
+    width: 24px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: var(--default-text);
+}
+
+/* Chrome, Safari, Edge, Opera */
+.tracking .box .score input::-webkit-outer-spin-button,
+.tracking .box .score input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.tracking .box .score input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.tracking .box .score .star-icon {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tracking .box .score .star-icon svg {
+    color: yellow;
+    font-size: 1.3rem;
+}
+
+.tracking .box .author {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--default-text);
+    margin-right: 56px;
+    z-index: 999;
+}
+
+.tracking .box .author img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+    object-position: center;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.records .data-list {
+    margin-top: 0px;
+}
+
+.records  .data-list .filters {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.records  .data-list .filters .filter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-checked {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background-color: transparent;
+    color: var(--default-text);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    gap: 24px;
+    width: auto;
+    min-width: 192px;
+}
+
+.date-checked span {
+    font-size: 1rem;
+    transition: color 0.2s ease-in-out;
+}
+
+.date-checked input {
+    width: 24px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: var(--default-text);
+}
+
+/* Chrome, Safari, Edge, Opera */
+.date-checked input::-webkit-outer-spin-button,
+.date-checked input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.date-checked input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.date-checked span:hover {
+    color: var(--green-hover);
+    user-select: none;
+}
+
+.records .filter.date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.records .filter.date label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.records .filter.star {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    user-select: none;
+}
+
+.records .filter.star input {
+    width: 24px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: var(--lighter-text);
+    border-bottom: 1px solid yellow;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.records .filter.star input::-webkit-outer-spin-button,
+.records .filter.star input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.records .filter.star input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
+.records input[type="checkbox"]#show-dates {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--default-text);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    gap: 24px;
 }
 

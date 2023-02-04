@@ -2,6 +2,13 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+
+// check if there is a .env file
+if (!fs.existsSync(path.join(__dirname, './.env'))) {
+    console.log("ERROR: .env file not found! Use the template in .env.example to create one.");
+    process.exit(1);
+}
 
 // import .env
 require('dotenv').config({
@@ -12,9 +19,6 @@ require('dotenv').config({
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-
-// import fs from node.js packages
-const fs = require('fs')
 
 if (!fs.existsSync(path.join(__dirname, '/cdn/'))) {
     fs.mkdirSync(path.join(__dirname, '/cdn/'));
@@ -114,12 +118,19 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: CONFIG.defaults.DEFAULT_MAX_FILE_SIZE[1] },
     fileFilter: (req, file, cb) => {
+        // do nothing if there is no file or file is default
+        if (!file || req.body.old_user_avatar_url.split("/").pop() == "default.png") {
+            cb(null, false);
+            return cb(new Error('No file or default file!'));
+        }
+
         if (file.mimetype.includes('image') || file.mimetype.includes('gif')) {
-            fs.unlink(path.join(__dirname, "/cdn/uploads/", req.session.user.user_avatar_url.split("/").pop()), (err) => {
-                if(err && !err.code == "ENOENT"){
+            fs.unlink(path.join(__dirname, "/cdn/uploads/", req.body.old_user_avatar_url.split("/").pop()), (err) => {
+                if (err && !err.code == "ENOENT") {
                     cb(null, false)
                     return cb(err)
                 }
+                console.log("Old file deleted")
             })
             cb(null, true);
         } else {
@@ -139,8 +150,15 @@ require("./api/post/fetchUserList")(app, db_connection);
 require("./api/post/deleteUser")(app, db_connection);
 require("./api/post/transferOwnership")(app, db_connection);
 
+require("./api/post/tracking/create")(app, db_connection);
+require("./api/post/tracking/delete")(app, db_connection);
+require("./api/post/tracking/update")(app, db_connection);
+
 // GET
 require("./api/get/userinfo")(app);
+require("./api/get/tracking/fetch")(app, db_connection);
+require("./api/get/tracking/fetchByFilter")(app, db_connection);
+require("./api/get/fetchUsers")(app, db_connection);
 
 
 // create server on port 9001 or port specified in .env file

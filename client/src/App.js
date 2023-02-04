@@ -12,6 +12,8 @@ import UserManagement from './components/UserManagement/UserManagement';
 import Axios from 'axios';
 import { useEffect } from 'react';
 import { setTheme } from './utils/utils';
+import Records from './components/Tracking/Records/Records';
+import Tracking from './components/Tracking/Tracking';
 Axios.defaults.withCredentials = true;
 
 function App() {
@@ -32,6 +34,14 @@ function App() {
 
           <Route path='/dashboard' element={
             <Dashboard componentToShow={<Home />} />
+          } />
+
+          <Route path='/dashboard/tracking' element={
+            <Dashboard componentToShow={<Tracking />} />
+          } />
+
+          <Route path='/dashboard/tracking/records' element={
+            <Dashboard componentToShow={<Records />} />
           } />
 
           <Route path="/dashboard/users/register" element={<RegisterPage />} />

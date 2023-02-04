@@ -35,7 +35,12 @@
         "INVALID_PERMISSIONS": "You do not have the required permissions to perform this action.",
         "INVALID_OLD_PASSWORD": "The old password you provided is incorrect.",
         "PASSWORDS_DONT_MATCH": "The new passwords you provided do not match.",
-        "ERROR_FETCHING_DATA": "Something went wrong with fetching the data... Please try again later!"
+        "ERROR_FETCHING_DATA": "Something went wrong with fetching the data... Please try again later!",
+        "TRACKING_CREATED": "Tracking has been created successfully.",
+        "TRACKING_UPDATED": "Tracking has been updated successfully.",
+        "TRACKING_DELETED": "Tracking has been deleted successfully.",
+        "TRACKING_FAILED": "Tracking has failed.",
+        "TRACKING_FETCHED": "Tracking has been fetched successfully."
     },
     "encryption": {
         "SALT_ROUNDS": 10
