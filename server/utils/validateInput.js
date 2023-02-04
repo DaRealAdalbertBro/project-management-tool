@@ -1,5 +1,4 @@
 const validator = require('validator').default;
-const emailValidator = require('deep-email-validator');
 const CONFIG = require("../config.json");
 
 const isEmpty = (value) => {

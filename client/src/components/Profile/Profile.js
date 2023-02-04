@@ -128,8 +128,6 @@ const Profile = () => {
                     }
                 }).catch(error => error);
                 // end of axios post
-
-                console.log("Axios post request sent to update user banner color.")
             }
             else {
                 // set banner color to user's banner color if it's already in database
@@ -455,13 +453,13 @@ const AvatarSettings = ({ data, popupContext, canSaveAvatar, setCanSaveAvatar, a
                     <div className="submit-wrapper">
                         <button className="settings-submit-button" disabled={!canSaveAvatar} onClick={() => {
                             // unless the avatar was restored, upload the new avatar
-                            if(restored){
+                            if (restored) {
                                 submitSettings(data, {
                                     type: "resetAvatar",
                                     canSave: [canSaveAvatar, setCanSaveAvatar],
                                     popupContext
                                 })
-                            }else {
+                            } else {
                                 submitSettings(data, {
                                     type: "avatar",
                                     avatarFile: avatarFile,
@@ -471,7 +469,7 @@ const AvatarSettings = ({ data, popupContext, canSaveAvatar, setCanSaveAvatar, a
                             }
 
                             // disable save button
-                            setCanSaveAvatar(false);                                               
+                            setCanSaveAvatar(false);
                         }}>
                             <p>Save</p>
                         </button>
