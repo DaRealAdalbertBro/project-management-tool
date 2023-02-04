@@ -4,7 +4,7 @@ Dashboard system that has login with other features, built in Node.js v16 and Re
 ## How to run locally
 
 ### Setting up project
-- All that needs to be added is the `.env` file, which inherits from the provided `env.template` file. This file must be located in the root directory of your server and looks like this:
+- All that needs to be added is the `.env` file, which inherits from the provided `env.template` file. This file must be located in the root directory of your server (`./server/.env`) and looks like this:
 ```env
 # Mysql Database
 DATABASE_HOST="127.0.0.1"
