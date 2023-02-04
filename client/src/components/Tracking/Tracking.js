@@ -13,6 +13,8 @@ import { LoadingCircle } from "../LoadingCircle";
 import './Tracking.css'
 import { CustomPopup } from "../CustomPopup";
 
+import { DatePicker } from 'rsuite';
+
 const animatedComponents = makeAnimated();
 
 const DropdownIndicator = props => {
@@ -299,7 +301,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                         e.target.onerror = null;
                         e.target.src = defaultProfilePicture;
                     }} alt="avatar" />
-                    
+
                     <div className="author-select">
                         <Select
                             id="author-filter"
@@ -312,7 +314,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                                     return { value: author.user_id, label: name }
                                 })
                             }
-                            defaultValue={{value: t_record.author.user_id, label: t_record.author.user_name + "#" + t_record.author.user_tag}}
+                            defaultValue={{ value: t_record.author.user_id, label: t_record.author.user_name + "#" + t_record.author.user_tag }}
                             className="react-select-container"
                             classNamePrefix="react-select"
                             placeholder="Author Filter"
@@ -442,8 +444,50 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                     }
 
                     {type && !type.includes("quick") && t_show_date && (
+
                         <div className="date-checked">
-                            <span>Started: <input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
+                            <DatePicker
+                                defaultValue={new Date(t_start_date)}
+                                appearance="subtle"
+                                format="yyyy-MM-dd HH:mm"
+                                calendarDefaultDate={new Date(t_start_date)}
+                                onChange={(date) => {
+                                    date = moment(date).format("YYYY-MM-DD HH:mm:ss");
+
+                                    if (date === t_start_date) return;
+
+                                    if (date > t_end_date) {
+                                        // event.target.value = t_start_date;
+                                        return;
+                                    }
+
+                                    console.log(date, t_end_date)
+
+                                    updateRecord({
+                                        start_date: date,
+                                    }, t_record, tracking_id, popupContext);
+                                }} />
+
+                            <DatePicker
+                                format="yyyy-MM-dd HH:mm"
+                                defaultValue={new Date(t_end_date)}
+                                appearance="subtle"
+                                onChange={(date) => {
+                                    date = moment(date).format("YYYY-MM-DD HH:mm:ss");
+
+                                    if (date === t_end_date) return;
+
+                                    if (date < t_start_date) {
+                                        // event.target.value = t_start_date;
+                                        return;
+                                    }
+
+                                    updateRecord({
+                                        end_date: date,
+                                    }, t_record, tracking_id, popupContext);
+                                }} />
+
+                            {/* <span>Started: <input type="datetime-local" className="startDate" defaultValue={t_start_date} onChange={(event) => {
                                 if (event.target.value === t_start_date) {
                                     return;
                                 }
@@ -480,7 +524,7 @@ export const Record = ({ type, t_description, t_tags, t_start_date, t_end_date, 
                                 updateRecord({
                                     end_date: event.target.value,
                                 }, t_record, tracking_id, popupContext);
-                            }} /></span>
+                            }} /></span> */}
                         </div>
                     )}
 

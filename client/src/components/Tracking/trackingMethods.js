@@ -58,6 +58,7 @@ export const updateRecord = (data, t_record, tracking_id, popupContext, reload =
         score: score,
     }, { signal: controller.signal })
         .then(response => {
+            console.log(response.data)
             if (response.data.status === 1 && reload) {
                 window.location.reload();
                 return;
