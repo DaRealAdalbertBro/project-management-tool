@@ -12,7 +12,7 @@ USE `voidDashboard`;
 
 ## CREATE THE users TABLE
 
-```
+```sql
 CREATE TABLE IF NOT EXISTS `users` (
     `user_id` BIGINT UNSIGNED NOT NULL PRIMARY KEY,
     `user_name` VARCHAR(64) NOT NULL,
@@ -25,9 +25,14 @@ CREATE TABLE IF NOT EXISTS `users` (
 );
 ```
 
+#### Add admin user
+```sql
+INSERT INTO users (user_id, user_name, user_tag, user_email, user_password_hash, user_permissions) VALUES (1071417644626567000, 'admin', '9609', 'admin@admin.com', '$2b$10$9ppENPVfuZSyTmLEbtzTiOVbWM5mDWh9qAnNypNcnMWK76oc2CAHm', 3);
+```
+
 ## CREATE THE tracking TABLE
 
-```
+```sql
 CREATE TABLE IF NOT EXISTS `tracking` (
     `user_id` BIGINT UNSIGNED NOT NULL,
     `description` VARCHAR(255) NOT NULL,
