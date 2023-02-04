@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 ```
 
 #### Add admin user
+**Email**: *admin@admin.com*, **Password**: *strongadmin*
 ```sql
 INSERT INTO users (user_id, user_name, user_tag, user_email, user_password_hash, user_permissions) VALUES (1071417644626567000, 'admin', '9609', 'admin@admin.com', '$2b$10$9ppENPVfuZSyTmLEbtzTiOVbWM5mDWh9qAnNypNcnMWK76oc2CAHm', 3);
 ```
