@@ -55,8 +55,8 @@
         ],
         "DEFAULT_PARAMETER_LIMIT": 1000,
         "DEFAULT_CORS_ORIGIN": [
-            "http://localhost:9000",
-            "http://host.docker.internal:9000"
+            "https://panel.artificialvoid.com:443",
+            "https://panel.artificialvoid.com"
         ],
         "DEFAULT_ALLOW_SPECIAL_CHARACTERS": true
     },
