@@ -1,12 +1,18 @@
 MySQL version: 8.0.31
 
+# ! CAUTION !
+If there is an error `Client does not support authentication protocol requested by server; consider upgrading MySQL client`, use the following command:
+```sql
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+```
+
 ## CREATE THE DB
 
-```
+```sql
 CREATE DATABASE IF NOT EXISTS `voidDashboard` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 ```
 
-```
+```sql
 USE `voidDashboard`;
 ```
 
